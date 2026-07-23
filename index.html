@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EvidentIA · De la pregunta clínica a la evidencia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<style>
+:root{
+  --navy:#10233F; --navy-light:#1C355C; --blue:#2F5A88;
+  --gold:#B8901F; --gold-light:#E4C766; --gold-bg:#FBF3DE;
+  --paper:#FBFAF7; --paper-dim:#F1EEE6; --card:#FFFFFF;
+  --ink:#1A1A18; --ink-soft:#5B594F; --ink-faint:#8B8A7E;
+  --line:#DED8C8; --line-strong:#C7BFA8;
+  --green:#1F7A5C; --green-bg:#E7F3EC;
+  --red:#B23A2E; --red-bg:#FBEAE6;
+  --amber-bg:#FBF3DE;
+  --serif:'Source Serif 4', Georgia, serif;
+  --sans:'Inter', system-ui, -apple-system, sans-serif;
+  --mono:'JetBrains Mono', 'SFMono-Regular', monospace;
+  --radius: 3px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.55;
+}
+::selection{background:var(--gold-light); color:var(--navy);}
+a{color:var(--blue);}
+h1,h2,h3{font-family:var(--serif); font-weight:600; color:var(--navy); margin:0;}
+button{font-family:var(--sans); cursor:pointer;}
+input,textarea,select{font-family:var(--sans); font-size:14px;}
+:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+
+/* ---------- header ---------- */
+header.top{
+  background:var(--navy); color:#EFEAD9; padding:22px 32px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  border-bottom:3px solid var(--gold);
+}
+.brand{display:flex; align-items:baseline; gap:14px;}
+.brand h1{color:#F6F1E1; font-size:26px; letter-spacing:.2px;}
+.brand .tag{font-size:12.5px; color:#B9C4D6; font-family:var(--mono); letter-spacing:.3px;}
+.top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.icon-btn{
+  background:transparent; border:1px solid #3A4E6E; color:#DCE3EE; border-radius:var(--radius);
+  padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:7px;
+}
+.icon-btn:hover{border-color:var(--gold); color:var(--gold-light);}
+
+/* ---------- layout ---------- */
+.shell{display:grid; grid-template-columns:64px 1fr; min-height:calc(100vh - 76px);}
+.stepper{
+  background:var(--paper-dim); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; align-items:center; padding:28px 0; gap:6px;
+  position:sticky; top:0; height:calc(100vh - 76px);
+}
+.step-dot{
+  width:34px; height:34px; border-radius:50%; border:1.5px solid var(--line-strong);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono);
+  font-size:13px; color:var(--ink-faint); background:var(--paper); position:relative; flex-shrink:0;
+}
+.step-dot.active{border-color:var(--navy); color:var(--navy); background:#fff; font-weight:600;}
+.step-dot.done{border-color:var(--green); color:#fff; background:var(--green);}
+.step-line{width:1.5px; flex:1; background:var(--line-strong); min-height:16px;}
+main{padding:32px 40px 80px; max-width:920px;}
+
+section.step{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:26px 30px; margin-bottom:22px; box-shadow:0 1px 2px rgba(16,35,63,.04);
+}
+section.step.locked{opacity:.45; pointer-events:none;}
+.step-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;}
+.step-head .eyebrow{font-family:var(--mono); font-size:11.5px; color:var(--gold); letter-spacing:1px; text-transform:uppercase;}
+.step-head h2{font-size:20px; margin-top:2px;}
+.hint{color:var(--ink-soft); font-size:13.5px; margin:6px 0 16px;}
+details.learn{margin:8px 0 16px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius); background:var(--paper-dim);}
+details.learn summary{cursor:pointer; padding:8px 12px; font-weight:600; color:var(--navy-light); list-style:none;}
+details.learn summary::-webkit-details-marker{display:none;}
+details.learn summary::before{content:'💡 '; }
+details.learn .body{padding:0 14px 12px; color:var(--ink-soft); line-height:1.6;}
+
+/* ---------- form basics ---------- */
+label.field-label{display:block; font-size:12.5px; font-weight:600; color:var(--navy-light); margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px;}
+textarea, input[type=text], input[type=password], input[type=number], select{
+  width:100%; border:1px solid var(--line-strong); border-radius:var(--radius); padding:10px 12px;
+  background:#fff; color:var(--ink);
+}
+textarea{min-height:90px; resize:vertical; font-family:var(--sans); line-height:1.5;}
+textarea:focus, input:focus, select:focus{border-color:var(--navy);}
+.btn{
+  border:none; border-radius:var(--radius); padding:10px 18px; font-size:13.5px; font-weight:600;
+  display:inline-flex; align-items:center; gap:8px; letter-spacing:.2px;
+}
+.btn-primary{background:var(--navy); color:#fff;}
+.btn-primary:hover{background:var(--navy-light);}
+.btn-primary:disabled{background:#A8AFBB; cursor:not-allowed;}
+.btn-gold{background:var(--gold); color:#2A2004;}
+.btn-gold:hover{background:#A57F18;}
+.btn-gold:disabled{background:#D8CBA0; color:#8A7E5C; cursor:not-allowed;}
+.btn-ghost{background:transparent; border:1px solid var(--line-strong); color:var(--navy-light);}
+.btn-ghost:hover{border-color:var(--navy);}
+.btn-ghost:disabled{opacity:.5; cursor:not-allowed;}
+.btn-sm{padding:6px 12px; font-size:12.5px;}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+.spacer-top{margin-top:16px;}
+
+/* ---------- mode switch ---------- */
+.mode-switch{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px; background:var(--paper-dim); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px;}
+.mode-option{display:flex; align-items:flex-start; gap:8px; font-size:13px; cursor:pointer; flex:1; min-width:220px;}
+.mode-option input{width:auto; margin-top:3px;}
+.mode-option .t{font-weight:600; color:var(--navy); display:block;}
+.mode-option .d{color:var(--ink-soft); font-size:12px;}
+
+/* ---------- PICO cards ---------- */
+.framework-badge{
+  display:inline-block; font-family:var(--mono); font-size:12px; background:var(--navy); color:#fff;
+  padding:3px 10px; border-radius:20px; margin-bottom:4px;
+}
+.pico-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:14px;}
+.pico-card{border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:var(--radius); padding:14px 16px; background:var(--paper-dim);}
+.pico-card .k{font-family:var(--mono); font-size:11px; color:var(--gold); font-weight:700; letter-spacing:1px;}
+.pico-card .l{font-size:12.5px; color:var(--ink-soft); margin-bottom:8px;}
+.pico-card input{margin-bottom:6px;}
+.pico-card .syn-label{font-size:11px; color:var(--ink-faint); margin-top:4px;}
+.mesh-status{margin-top:8px; font-size:12px; font-family:var(--mono);}
+.mesh-status.ok{color:var(--green);}
+.mesh-status.pending{color:var(--ink-faint);}
+.mesh-box{margin-top:8px; background:#fff; border:1px dashed var(--line-strong); border-radius:var(--radius); padding:8px 10px; font-family:var(--mono); font-size:11.5px; color:var(--navy-light); word-break:break-word;}
+.chip-row{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
+.chip{font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-soft);}
+.chip.selected{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+/* ---------- filters ---------- */
+.filters-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px 18px; margin:14px 0;}
+.filter-item{display:flex; align-items:center; gap:8px; font-size:13px;}
+.filter-item input{width:auto;}
+
+/* ---------- equation ---------- */
+.equation-box{
+  background:var(--navy); color:#E8E2C8; font-family:var(--mono); font-size:13.5px;
+  padding:16px 18px; border-radius:var(--radius); white-space:pre-wrap; word-break:break-word;
+  line-height:1.7; border-left:4px solid var(--gold);
+}
+.equation-explain{font-size:13px; color:var(--ink-soft); margin-top:10px; font-style:italic;}
+.refine-row{display:flex; gap:8px; margin-top:14px;}
+.refine-row input{flex:1;}
+.manual-eq-box textarea{font-family:var(--mono); font-size:12.5px; min-height:70px;}
+
+/* ---------- funnel ---------- */
+.funnel{margin-top:20px;}
+.funnel-row{display:grid; grid-template-columns:110px 1fr 70px; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px;}
+.funnel-label{font-family:var(--mono); color:var(--navy-light); text-align:right;}
+.funnel-track{background:var(--paper-dim); border-radius:2px; height:20px; overflow:hidden; border:1px solid var(--line);}
+.funnel-fill{height:100%; background:linear-gradient(90deg,var(--blue),var(--navy)); transition:width .5s ease;}
+.funnel-count{font-family:var(--mono); color:var(--ink-soft); text-align:right;}
+
+/* ---------- otras fuentes ---------- */
+.source-card{border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px;}
+.source-card h3{font-size:15px; margin-bottom:4px;}
+.source-card .note{font-size:12px; color:var(--ink-faint); margin:6px 0 10px;}
+.generic-query-box{background:#fff; border:1px dashed var(--line-strong); border-radius:var(--radius); padding:10px 12px; font-family:var(--mono); font-size:12.5px; color:var(--navy-light); word-break:break-word; margin-bottom:10px;}
+
+/* ---------- results ---------- */
+.results-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;}
+.result-card{border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; position:relative;}
+.result-card h3{font-size:15.5px; line-height:1.4;}
+.result-meta{font-size:12px; color:var(--ink-soft); margin:6px 0;}
+.result-actions{display:flex; gap:8px; margin-top:8px; align-items:center; flex-wrap:wrap;}
+.abstract-box{margin-top:10px; font-size:13px; color:var(--ink-soft); border-top:1px dashed var(--line); padding-top:10px; display:none;}
+.abstract-box.show{display:block;}
+.badge{font-size:11px; font-family:var(--mono); padding:3px 9px; border-radius:20px; font-weight:600; position:absolute; top:14px; right:16px;}
+.badge.incluir{background:var(--green-bg); color:var(--green);}
+.badge.excluir{background:var(--red-bg); color:var(--red);}
+.badge.dudoso{background:var(--amber-bg); color:var(--gold);}
+
+/* ---------- rúbrica ---------- */
+.rubric-item{display:flex; gap:8px; align-items:flex-start; font-size:12.5px; padding:7px 0; border-bottom:1px dashed var(--line);}
+.rubric-item:last-child{border-bottom:none;}
+.rubric-mark{font-weight:700; flex-shrink:0; width:16px;}
+.rubric-mark.ok{color:var(--green);}
+.rubric-mark.fail{color:var(--red);}
+.rubric-mark.rec{color:var(--gold);}
+.rubric-tag{font-size:10px; font-family:var(--mono); color:var(--ink-faint); margin-left:6px;}
+#rubricBox{margin-top:10px; background:var(--paper-dim); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px;}
+
+/* ---------- history drawer ---------- */
+.drawer{
+  position:fixed; top:0; right:-380px; width:360px; height:100vh; background:#fff; border-left:1px solid var(--line);
+  box-shadow:-4px 0 18px rgba(0,0,0,.08); transition:right .25s ease; z-index:60; padding:22px; overflow-y:auto;
+}
+.drawer.open{right:0;}
+.drawer h2{font-size:18px; margin-bottom:14px;}
+.hist-item{border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; font-size:12.5px;}
+.hist-item .q{font-weight:600; color:var(--navy); margin-bottom:4px; font-size:13px;}
+.hist-item .meta{color:var(--ink-faint); font-family:var(--mono); font-size:11px;}
+.hist-actions{display:flex; gap:6px; margin-top:8px;}
+.overlay{position:fixed; inset:0; background:rgba(16,35,63,.35); z-index:55; display:none;}
+.overlay.show{display:block;}
+
+/* ---------- modal ---------- */
+.modal-backdrop{position:fixed; inset:0; background:rgba(16,35,63,.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;}
+.modal-backdrop.show{display:flex;}
+.modal{background:#fff; border-radius:var(--radius); padding:26px 28px; width:440px; max-width:92vw; border-top:4px solid var(--gold); max-height:90vh; overflow-y:auto;}
+.modal h2{font-size:18px; margin-bottom:4px;}
+.modal .hint{margin-bottom:18px;}
+.modal .field{margin-bottom:14px;}
+.modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
+.small-note{font-size:11.5px; color:var(--ink-faint); margin-top:4px;}
+
+/* ---------- misc ---------- */
+.loader{display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite;}
+.loader.dark{border:2px solid rgba(16,35,63,.25); border-top-color:var(--navy);}
+@keyframes spin{to{transform:rotate(360deg);}}
+.err{background:var(--red-bg); color:var(--red); padding:10px 14px; border-radius:var(--radius); font-size:13px; margin-top:10px;}
+.err details{margin-top:6px; font-size:11.5px; color:#8a2f26;}
+.err summary{cursor:pointer;}
+.ok-msg{background:var(--green-bg); color:var(--green); padding:10px 14px; border-radius:var(--radius); font-size:13px; margin-top:10px;}
+footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-faint); font-family:var(--mono);}
+@media(max-width:720px){ .shell{grid-template-columns:1fr;} .stepper{flex-direction:row; height:auto; position:static; padding:14px;} .step-line{width:16px; height:1.5px;} main{padding:20px;} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>EvidentIA</h1>
+    <span class="tag">pregunta clínica → PICO → ecuación → PubMed</span>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="btnReset" title="Empieza una búsqueda nueva">🔄 Nueva búsqueda</button>
+    <button class="icon-btn" id="btnHistory">📜 Historial</button>
+    <button class="icon-btn" id="btnSettings">⚙ Configuración</button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="stepper" id="stepperNav"></nav>
+
+  <main>
+
+    <!-- STEP 1: pregunta / marco -->
+    <section class="step" id="step1">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 1</div><h2>Pregunta clínica y marco de trabajo</h2></div>
+      </div>
+
+      <div class="row" style="margin-bottom:14px;">
+        <button class="btn btn-ghost btn-sm" id="btnDemo">▶ Ver ejemplo resuelto (datos reales de PubMed)</button>
+        <button class="btn btn-ghost btn-sm" id="btnImportSession">📂 Importar sesión guardada (.json)</button>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+      </div>
+
+      <div class="mode-switch" id="modeSwitch">
+        <label class="mode-option">
+          <input type="radio" name="workMode" value="ia" id="modeIA">
+          <span><span class="t">Con ayuda de la IA</span><span class="d">La IA propone el marco (PICO/PICOS/PECO/SPIDER) y extrae los elementos por ti. Requiere clave de OpenAI.</span></span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="workMode" value="manual" id="modeManual">
+          <span><span class="t">Manual, sin IA</span><span class="d">Tú eliges el marco y rellenas cada elemento. Ideal para practicar el razonamiento antes de comparar con la IA. No requiere clave.</span></span>
+        </label>
+      </div>
+
+      <label class="field-label">Pregunta / escenario clínico</label>
+      <p class="hint" style="margin-top:-10px;">Recuerda: la rúbrica exige que la pregunta conste explícitamente en forma gramatical de interrogación ("¿...?").</p>
+      <textarea id="inputQuestion" placeholder="Ej: ¿En pacientes adultos con sepsis grave en urgencias, la administración precoz de noradrenalina antes de completar la reposición de volumen mejora la supervivencia a 28 días frente a la reposición de volumen inicial?"></textarea>
+
+      <div id="aiOnlyAnalyze">
+        <p class="hint">La IA decidirá qué marco metodológico se ajusta mejor a tu pregunta y por qué.</p>
+        <div class="row spacer-top">
+          <button class="btn btn-primary" id="btnAnalyze">Analizar pregunta y proponer marco <span id="loadAnalyze"></span></button>
+        </div>
+      </div>
+
+      <div id="manualFrameworkPicker" style="display:none;">
+        <label class="field-label spacer-top">Marco a utilizar</label>
+        <select id="manualFrameworkSelect">
+          <option value="PICO">PICO — Terapia / diagnóstico / prevención</option>
+          <option value="PICOS">PICOS — PICO + diseño de estudio (protocolos de revisión)</option>
+          <option value="PECO">PECO — Etiología / daño / exposición</option>
+          <option value="SPIDER">SPIDER — Investigación cualitativa</option>
+        </select>
+        <details class="learn"><summary>¿Qué marco elijo?</summary><div class="body">
+          <strong>PICO</strong>: preguntas de terapia, diagnóstico o prevención.<br>
+          <strong>PICOS</strong>: igual que PICO, pero fijando de antemano el diseño de estudio (útil en protocolos de revisión sistemática).<br>
+          <strong>PECO</strong>: preguntas de etiología, daño o exposición a un factor de riesgo (sustituye Intervención por Exposición).<br>
+          <strong>SPIDER</strong>: preguntas cualitativas o de experiencia/percepción.
+        </div></details>
+        <div class="row spacer-top">
+          <button class="btn btn-primary" id="btnManualConfirm">Continuar con relleno manual <span id="loadManual"></span></button>
+        </div>
+      </div>
+      <div id="errAnalyze"></div>
+    </section>
+
+    <!-- STEP 2: marco / PICO -->
+    <section class="step locked" id="step2">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 2</div><h2>Marco estructurado</h2></div>
+      </div>
+      <div id="frameworkInfo"></div>
+      <p class="hint">Revisa y edita los elementos extraídos. Puedes ajustar el término principal y los sinónimos (separados por comas) que se usarán como texto libre en PubMed.</p>
+      <div class="pico-grid" id="picoGrid"></div>
+      <div class="row spacer-top">
+        <button class="btn btn-primary" id="btnVerifyMesh">Verificar términos contra PubMed (MeSH) <span id="loadMesh"></span></button>
+      </div>
+      <div id="errMesh"></div>
+    </section>
+
+    <!-- STEP 3: filtros -->
+    <section class="step locked" id="step3">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 3</div><h2>Filtros de calidad de evidencia</h2></div>
+      </div>
+      <p class="hint">Selecciona los filtros metodológicos que se traducirán a etiquetas de campo reales de PubMed (Publication Type, MeSH, idioma, fecha).</p>
+      <div class="filters-grid" id="filtersGrid"></div>
+      <div class="row" style="margin-top:6px;">
+        <div style="flex:1; min-width:160px;">
+          <label class="field-label">Años hacia atrás</label>
+          <input type="number" id="filterYears" value="10" min="0" max="60">
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label class="field-label">Idioma</label>
+          <select id="filterLang">
+            <option value="">Cualquiera</option>
+            <option value="english">Inglés</option>
+            <option value="spanish">Español</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label class="field-label">Resultados a recuperar</label>
+          <select id="filterRetmax">
+            <option value="20">20</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+      <div class="row spacer-top">
+        <button class="btn btn-primary" id="btnBuildEquation">Generar ecuación de búsqueda <span id="loadEq"></span></button>
+      </div>
+      <div id="errEq"></div>
+    </section>
+
+    <!-- STEP 4: ecuación + funnel -->
+    <section class="step locked" id="step4">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 4</div><h2>Ecuación de búsqueda</h2></div>
+      </div>
+      <div class="equation-box" id="equationBox">—</div>
+      <div class="equation-explain" id="equationExplain"></div>
+
+      <div class="refine-row" id="refineAIRow">
+        <input type="text" id="refineInput" placeholder="Refina en lenguaje natural: p.ej. 'añade filtro pediátrico', 'quita el filtro de idioma'…">
+        <button class="btn btn-ghost btn-sm" id="btnRefine">Refinar <span id="loadRefine"></span></button>
+      </div>
+      <div class="manual-eq-box" id="refineManualRow" style="display:none; margin-top:14px;">
+        <label class="field-label">Edita la ecuación directamente</label>
+        <textarea id="manualEqInput"></textarea>
+        <div class="row spacer-top">
+          <button class="btn btn-ghost btn-sm" id="btnApplyManualEq">Aplicar cambios</button>
+        </div>
+      </div>
+
+      <div class="funnel" id="funnelWrap" style="display:none;">
+        <label class="field-label">Embudo de evidencia (recuento acumulado en PubMed, AND sucesivo)</label>
+        <div id="funnelBars"></div>
+      </div>
+      <div class="row spacer-top">
+        <button class="btn btn-ghost" id="btnFunnel">Calcular embudo (recuentos reales)</button>
+        <button class="btn btn-primary" id="btnSearch">Buscar en PubMed <span id="loadSearch"></span></button>
+      </div>
+      <div id="errSearch"></div>
+    </section>
+
+    <!-- STEP 5: otras fuentes -->
+    <section class="step locked" id="step5">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 5</div><h2>Comparar en otras fuentes</h2></div>
+      </div>
+      <p class="hint">MEDLINE es obligatorio, pero la rúbrica recomienda encarecidamente contrastar en Web of Science y Scopus, y valora que justifiques por qué elegiste unas fuentes y no otras. La lógica booleana de tu ecuación es portable: aquí tienes una versión genérica (sin etiquetas específicas de PubMed) para pegar en otros sistemas.</p>
+      <div class="generic-query-box" id="genericQueryBox">—</div>
+      <div class="row" style="margin-bottom:16px;">
+        <button class="btn btn-ghost btn-sm" id="btnCopyGeneric">Copiar términos adaptados</button>
+        <span id="copyMsg" class="hint" style="margin:0;"></span>
+      </div>
+
+      <div class="source-card">
+        <h3>Cochrane Library</h3>
+        <div class="note">Revisiones sistemáticas y metaanálisis Cochrane + CENTRAL (ensayos). Pega los términos adaptados en su buscador básico.</div>
+        <a href="https://www.cochranelibrary.com/search" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Abrir Cochrane Library ↗</a>
+        <label class="filter-item spacer-top"><input type="checkbox" id="srcCochrane"> He consultado Cochrane Library</label>
+      </div>
+      <div class="source-card">
+        <h3>Bases de datos internacionales multidisciplinares</h3>
+        <div class="note">Scopus, Web of Science, Embase, etc. Requieren acceso institucional (Biblioteca UMH, VPN o proxy). Altamente recomendadas por la rúbrica.</div>
+        <div class="row">
+          <a href="https://www.scopus.com/search/form.uri?display=basic" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Scopus ↗</a>
+          <a href="https://www.webofscience.com/wos/woscc/basic-search" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Web of Science ↗</a>
+          <a href="https://biblioteca.umh.es/busca-informacion/accede-por-plataformas/" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Acceso vía Biblioteca UMH ↗</a>
+        </div>
+        <label class="filter-item spacer-top"><input type="checkbox" id="srcMulti"> He consultado alguna base multidisciplinar</label>
+      </div>
+
+      <label class="field-label spacer-top">Justificación de la selección de fuentes</label>
+      <p class="hint" style="margin-top:-10px;">La rúbrica pide justificar por qué estas fuentes son las más adecuadas para tu necesidad informativa (no hace falta usarlas todas).</p>
+      <textarea id="srcJustification" style="min-height:70px;"></textarea>
+
+      <label class="field-label spacer-top">Notas adicionales sobre otras fuentes (opcional)</label>
+      <textarea id="srcNotes" style="min-height:60px;"></textarea>
+    </section>
+
+    <!-- STEP 6: resultados -->
+    <section class="step locked" id="step6">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 6</div><h2>Resultados en PubMed</h2></div>
+      </div>
+      <div class="results-toolbar">
+        <span id="resultsCount" class="hint" style="margin:0;"></span>
+        <button class="btn btn-gold btn-sm" id="btnScreen">Cribado rápido con IA (Incluir/Excluir/Dudoso) <span id="loadScreen"></span></button>
+      </div>
+      <div id="resultsList"></div>
+    </section>
+
+    <!-- STEP 7: exportar -->
+    <section class="step locked" id="step7">
+      <div class="step-head">
+        <div><div class="eyebrow">Paso 7</div><h2>Redactar, exportar y guardar</h2></div>
+      </div>
+      <div class="row">
+        <div style="flex:1; min-width:200px;">
+          <label class="field-label">Nombre del estudiante</label>
+          <input type="text" id="studentName" placeholder="Nombre y apellidos">
+        </div>
+        <div style="flex:1; min-width:200px;">
+          <label class="field-label">Asignatura / grupo</label>
+          <input type="text" id="studentGroup" value="Documentación Científica Avanzada y Elaboración Práctica de un Proyecto de Investigación">
+        </div>
+      </div>
+
+      <label class="field-label spacer-top">Respuesta breve a la pregunta formulada</label>
+      <p class="hint" style="margin-top:-10px;">Exigido por la rúbrica (apartado D). En una o dos frases: ¿qué responde la evidencia encontrada a tu pregunta?</p>
+      <textarea id="finalAnswer" style="min-height:70px;"></textarea>
+
+      <label class="field-label spacer-top">Párrafo de estrategia de búsqueda (para el apartado de métodos del protocolo)</label>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" id="btnGenMethodTemplate">Generar párrafo</button>
+        <button class="btn btn-gold btn-sm" id="btnAiPolish" style="display:none;">Mejorar redacción con IA <span id="loadPolish"></span></button>
+      </div>
+      <textarea id="methodParagraph" style="min-height:150px; margin-top:8px;"></textarea>
+
+      <div class="row spacer-top">
+        <button class="btn btn-ghost btn-sm" id="btnCheckRubric">Comprobar cumplimiento de la rúbrica</button>
+      </div>
+      <div id="rubricBox" style="display:none;"></div>
+
+      <p class="hint spacer-top">Genera un anexo metodológico reproducible (marco, términos MeSH verificados, ecuación, filtros, otras fuentes, resultados y autoevaluación) listo para incluir en tu protocolo. No incluye capturas de pantalla, tal como pide la rúbrica: todo es texto reproducible.</p>
+      <div class="row">
+        <button class="btn btn-primary" id="btnExportDocx">Exportar a Word (.docx)</button>
+        <button class="btn btn-ghost" id="btnExportPdf">Exportar a PDF</button>
+        <button class="btn btn-ghost" id="btnExportJson">Exportar sesión (.json)</button>
+        <button class="btn btn-ghost" id="btnSaveHistory">Guardar en historial</button>
+      </div>
+      <div id="exportMsg"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot" id="appFooter">EvidentIA · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia</footer>
+
+<!-- History drawer -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <h2>Historial de búsquedas</h2>
+  <div id="histList"></div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal">
+    <h2>Configuración</h2>
+    <p class="hint">La clave se guarda solo en este navegador (localStorage). Las llamadas a OpenAI se hacen directamente desde tu navegador. Si no vas a usar el modo IA, puedes cerrar esto y trabajar en modo manual.</p>
+    <div class="field">
+      <label class="field-label">Clave API de OpenAI (opcional en modo manual)</label>
+      <input type="password" id="cfgApiKey" placeholder="sk-...">
+    </div>
+    <div class="field">
+      <label class="field-label">Modelo</label>
+      <select id="cfgModel">
+        <option value="gpt-4o-mini">gpt-4o-mini (rápido y económico, por defecto)</option>
+        <option value="gpt-4o">gpt-4o</option>
+        <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+        <option value="gpt-4.1">gpt-4.1</option>
+        <option value="o4-mini">o4-mini (razonamiento)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label">Clave API de NCBI (opcional, acelera PubMed de 3 a 10 peticiones/seg)</label>
+      <input type="text" id="cfgNcbiKey" placeholder="opcional">
+    </div>
+    <div class="field">
+      <label class="field-label">Email de contacto (recomendado por NCBI, opcional)</label>
+      <input type="text" id="cfgEmail" placeholder="tucorreo@umh.es">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btnCloseSettings">Cerrar</button>
+      <button class="btn btn-primary" id="btnSaveSettings">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   VERSIÓN
+   ========================================================= */
+const APP_VERSION = 'v3.0';
+const APP_BUILD_DATE = '2026-07-23';
+document.getElementById('appFooter').textContent =
+  `EvidentIA ${APP_VERSION} (${APP_BUILD_DATE}) · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia`;
+
+/* =========================================================
+   ESTADO GLOBAL
+   ========================================================= */
+const state = {
+  useAI: true,
+  question: '', framework: null, questionType: '', rationale: '',
+  elements: [],
+  filters: {}, years: 10, lang: '', retmax: 50, activeFilterLabels: [],
+  equation: '', equationExplain: '',
+  funnel: [],
+  results: [],
+  totalCount: 0, searched: false,
+  otherSources: {cochrane:false, multi:false, justification:'', notes:''},
+  student: {name:'', group:''},
+  dirty: false
+};
+
+const FILTER_DEFS = [
+  {id:'rct', label:'Ensayo clínico aleatorizado', tag:'Randomized Controlled Trial[pt]'},
+  {id:'sr', label:'Revisión sistemática', tag:'Systematic Review[pt]'},
+  {id:'ma', label:'Metaanálisis', tag:'Meta-Analysis[pt]'},
+  {id:'guideline', label:'Guía de práctica clínica', tag:'Practice Guideline[pt]'},
+  {id:'cohort', label:'Estudio de cohortes', tag:'"Cohort Studies"[Mesh]'},
+  {id:'humans', label:'Solo humanos', tag:'Humans[Mesh]'},
+  {id:'ffrt', label:'Solo texto completo gratuito', tag:'"loattrfree full text"[sb]'}
+];
+
+const FRAMEWORK_TEMPLATES = {
+  PICO: [['P','Población / Paciente'],['I','Intervención'],['C','Comparación'],['O','Resultado (Outcome)']],
+  PICOS: [['P','Población / Paciente'],['I','Intervención'],['C','Comparación'],['O','Resultado (Outcome)'],['S','Diseño de estudio']],
+  PECO: [['P','Población'],['E','Exposición'],['C','Comparación'],['O','Resultado']],
+  SPIDER: [['S','Muestra (Sample)'],['PI','Fenómeno de interés'],['D','Diseño'],['E','Evaluación'],['R','Tipo de investigación']]
+};
+
+const DEMO_CASE = {
+  question: '¿En pacientes adultos con fibrilación auricular no valvular, los anticoagulantes orales de acción directa reducen el riesgo de ictus isquémico en comparación con warfarina?',
+  framework: 'PICO',
+  elements: [
+    {key:'P', label:'Población / Paciente', value:'nonvalvular atrial fibrillation', synonyms:['atrial fibrillation','AF']},
+    {key:'I', label:'Intervención', value:'direct oral anticoagulants', synonyms:['DOAC','NOAC','apixaban','rivaroxaban','dabigatran']},
+    {key:'C', label:'Comparación', value:'warfarin', synonyms:['vitamin K antagonist']},
+    {key:'O', label:'Resultado (Outcome)', value:'ischemic stroke', synonyms:['stroke prevention']}
+  ]
+};
+
+function cfg(){
+  return {
+    apiKey: localStorage.getItem('ia_openai_key') || '',
+    model: localStorage.getItem('ia_openai_model') || 'gpt-4o-mini',
+    ncbiKey: localStorage.getItem('ia_ncbi_key') || '',
+    email: localStorage.getItem('ia_ncbi_email') || ''
+  };
+}
+function hasAI(){ return !!cfg().apiKey; }
+
+/* =========================================================
+   STEPPER UI
+   ========================================================= */
+const STEP_TITLES = ['Pregunta','Marco','Filtros','Ecuación','Otras fuentes','Resultados','Exportar'];
+function renderStepper(activeIdx){
+  const nav = document.getElementById('stepperNav');
+  nav.innerHTML = '';
+  STEP_TITLES.forEach((t,i)=>{
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i < activeIdx ? ' done' : (i===activeIdx? ' active':''));
+    dot.title = t;
+    dot.textContent = i < activeIdx ? '✓' : (i+1);
+    nav.appendChild(dot);
+    if(i < STEP_TITLES.length-1){
+      const line = document.createElement('div');
+      line.className = 'step-line';
+      nav.appendChild(line);
+    }
+  });
+}
+function unlockStep(n){ document.getElementById('step'+n).classList.remove('locked'); }
+function setActive(idx){ renderStepper(idx); }
+renderStepper(0);
+
+/* =========================================================
+   INDEXEDDB (historial)
+   ========================================================= */
+let dbPromise = new Promise((resolve,reject)=>{
+  const req = indexedDB.open('evidentia_db', 1);
+  req.onupgradeneeded = ()=>{
+    const db = req.result;
+    if(!db.objectStoreNames.contains('sessions')){
+      const store = db.createObjectStore('sessions', {keyPath:'id', autoIncrement:true});
+      store.createIndex('timestamp','timestamp');
+    }
+  };
+  req.onsuccess = ()=>resolve(req.result);
+  req.onerror = ()=>reject(req.error);
+});
+async function dbSave(session){
+  const db = await dbPromise;
+  return new Promise((res,rej)=>{
+    const tx = db.transaction('sessions','readwrite');
+    tx.objectStore('sessions').add(session);
+    tx.oncomplete = ()=>res(true);
+    tx.onerror = ()=>rej(tx.error);
+  });
+}
+async function dbList(){
+  const db = await dbPromise;
+  return new Promise((res,rej)=>{
+    const tx = db.transaction('sessions','readonly');
+    const req = tx.objectStore('sessions').getAll();
+    req.onsuccess = ()=>res(req.result.sort((a,b)=>b.timestamp-a.timestamp));
+    req.onerror = ()=>rej(req.error);
+  });
+}
+async function dbDelete(id){
+  const db = await dbPromise;
+  return new Promise((res,rej)=>{
+    const tx = db.transaction('sessions','readwrite');
+    tx.objectStore('sessions').delete(id);
+    tx.oncomplete = ()=>res(true);
+    tx.onerror = ()=>rej(tx.error);
+  });
+}
+
+/* =========================================================
+   OPENAI
+   ========================================================= */
+async function callOpenAI(messages){
+  const {apiKey, model} = cfg();
+  if(!apiKey){
+    const err = new Error('Falta la clave API de OpenAI.');
+    err.friendlyMessage = 'Falta la clave API de OpenAI. Ábrela en Configuración (⚙), o cambia al modo manual en el Paso 1.';
+    throw err;
+  }
+  const body = { model, messages, response_format:{type:'json_object'}, temperature:0.2 };
+  let res;
+  try{
+    res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify(body)
+    });
+  }catch(networkErr){
+    const err = new Error('network');
+    err.friendlyMessage = 'No se pudo contactar con OpenAI. Comprueba tu conexión a internet e inténtalo de nuevo.';
+    throw err;
+  }
+  if(!res.ok){
+    const t = await res.text();
+    let friendly;
+    if(res.status===401) friendly = 'Clave de API no válida o caducada. Revisa la Configuración (⚙).';
+    else if(res.status===429) friendly = 'Se alcanzó el límite de peticiones o de crédito en tu cuenta de OpenAI. Espera un momento o revisa tu saldo.';
+    else if(res.status>=500) friendly = 'El servicio de OpenAI no está disponible en este momento. Inténtalo de nuevo en unos minutos.';
+    else friendly = 'No se pudo completar la petición a la IA.';
+    const err = new Error('HTTP '+res.status);
+    err.friendlyMessage = friendly;
+    err.technical = 'HTTP '+res.status+': '+t.slice(0,300);
+    throw err;
+  }
+  const data = await res.json();
+  const content = data.choices[0].message.content;
+  try{ return JSON.parse(content); }
+  catch(e){
+    const err = new Error('La IA no devolvió JSON válido.');
+    err.friendlyMessage = 'La IA devolvió una respuesta que no se pudo interpretar. Inténtalo de nuevo.';
+    err.technical = content.slice(0,300);
+    throw err;
+  }
+}
+function errHtml(e){
+  const msg = (e && e.friendlyMessage) ? e.friendlyMessage : (e && e.message ? e.message : 'Ha ocurrido un error inesperado.');
+  const tech = e && e.technical ? '<details><summary>Detalle técnico</summary>'+escapeHtml(e.technical)+'</details>' : '';
+  return '<div class="err">'+escapeHtml(msg)+tech+'</div>';
+}
+
+/* =========================================================
+   PUBMED E-UTILITIES  (con throttle simple ~3 req/seg)
+   ========================================================= */
+let lastCall = 0;
+async function throttle(){
+  const {ncbiKey} = cfg();
+  const minGap = ncbiKey ? 110 : 350;
+  const wait = Math.max(0, lastCall + minGap - Date.now());
+  if(wait>0) await new Promise(r=>setTimeout(r,wait));
+  lastCall = Date.now();
+}
+function eutilsParams(extra){
+  const {ncbiKey, email} = cfg();
+  const p = new URLSearchParams(extra);
+  p.set('retmode','json');
+  p.set('tool','EvidentIA_UMH');
+  if(ncbiKey) p.set('api_key', ncbiKey);
+  if(email) p.set('email', email);
+  return p;
+}
+async function pubmedTranslate(term){
+  await throttle();
+  const p = eutilsParams({db:'pubmed', term, retmax:'0'});
+  const res = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?'+p.toString());
+  if(!res.ok) throw new Error('PubMed no respondió. Comprueba tu conexión e inténtalo de nuevo.');
+  const j = await res.json();
+  return { count: parseInt(j.esearchresult.count||'0',10), translation: j.esearchresult.querytranslation || '' };
+}
+async function pubmedSearch(term, retmax, sort){
+  await throttle();
+  const p = eutilsParams({db:'pubmed', term, retmax:String(retmax||50), sort: sort||'relevance'});
+  const res = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?'+p.toString());
+  if(!res.ok) throw new Error('PubMed no respondió. Comprueba tu conexión e inténtalo de nuevo.');
+  const j = await res.json();
+  return { count: parseInt(j.esearchresult.count||'0',10), ids: j.esearchresult.idlist || [] };
+}
+async function pubmedSummary(ids){
+  if(!ids.length) return [];
+  await throttle();
+  const p = eutilsParams({db:'pubmed', id: ids.join(',')});
+  const res = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?'+p.toString());
+  if(!res.ok) throw new Error('PubMed no respondió. Comprueba tu conexión e inténtalo de nuevo.');
+  const j = await res.json();
+  return ids.map(id=>{
+    const it = j.result[id];
+    if(!it) return null;
+    const authors = (it.authors||[]).slice(0,4).map(a=>a.name).join(', ') + ((it.authors||[]).length>4 ? ' et al.' : '');
+    const doiObj = (it.articleids||[]).find(a=>a.idtype==='doi');
+    return { pmid:id, title:it.title||'(sin título)', authors, journal:it.fulljournalname||it.source||'', year:(it.pubdate||'').slice(0,4), doi: doiObj ? doiObj.value : '' };
+  }).filter(Boolean);
+}
+async function pubmedAbstract(pmid){
+  await throttle();
+  const p = eutilsParams({db:'pubmed', id:pmid, rettype:'abstract', retmode:'text'});
+  const res = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?'+p.toString());
+  if(!res.ok) throw new Error('PubMed no respondió al pedir el resumen.');
+  return await res.text();
+}
+
+/* =========================================================
+   MODO DE TRABAJO (IA vs MANUAL)
+   ========================================================= */
+function setMode(mode){
+  state.useAI = (mode === 'ia');
+  document.getElementById('modeIA').checked = state.useAI;
+  document.getElementById('modeManual').checked = !state.useAI;
+  document.getElementById('aiOnlyAnalyze').style.display = state.useAI? 'block':'none';
+  document.getElementById('manualFrameworkPicker').style.display = state.useAI? 'none':'block';
+  document.getElementById('refineAIRow').style.display = state.useAI? 'flex':'none';
+  document.getElementById('refineManualRow').style.display = state.useAI? 'none':'block';
+}
+document.querySelectorAll('input[name=workMode]').forEach(r=>r.addEventListener('change', e=>setMode(e.target.value)));
+
+function refreshAIAvailabilityUI(){
+  const avail = hasAI();
+  document.getElementById('btnScreen').disabled = !avail;
+  document.getElementById('btnScreen').title = avail? '' : 'Requiere una clave de OpenAI configurada (⚙ Configuración).';
+  document.getElementById('btnAiPolish').style.display = avail? 'inline-flex':'none';
+}
+
+/* =========================================================
+   PASO 1: ejemplo resuelto e importar sesión
+   ========================================================= */
+document.getElementById('btnDemo').addEventListener('click', ()=>{
+  if(state.dirty && !confirm('Cargar el ejemplo sustituirá tu progreso actual sin guardar. ¿Continuar?')) return;
+  document.getElementById('inputQuestion').value = DEMO_CASE.question;
+  state.question = DEMO_CASE.question;
+  state.framework = DEMO_CASE.framework;
+  state.questionType = 'Terapia / tratamiento — caso de ejemplo';
+  state.rationale = 'Caso ilustrativo precargado para que veas el flujo completo. A partir de aquí, todos los datos que obtengas (verificación MeSH, ecuación, resultados) son reales y en vivo desde PubMed: solo la pregunta y el PICO de partida están precargados.';
+  state.elements = DEMO_CASE.elements.map(e=>({...e, synonyms:[...e.synonyms], meshTranslation:'', useOfficial:false, verified:false}));
+  document.getElementById('modeManual').checked = true; setMode('manual');
+  state.dirty = false;
+  renderFramework(); renderPicoGrid();
+  unlockStep(2); setActive(1);
+  document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('btnImportSession').addEventListener('click', ()=>{
+  document.getElementById('importFileInput').click();
+});
+document.getElementById('importFileInput').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const obj = JSON.parse(reader.result);
+      loadSession(obj);
+    }catch(err){
+      document.getElementById('errAnalyze').innerHTML = '<div class="err">El archivo no es una sesión válida de EvidentIA.</div>';
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* =========================================================
+   PASO 1 (IA): analizar pregunta clínica
+   ========================================================= */
+document.getElementById('btnAnalyze').addEventListener('click', async ()=>{
+  const q = document.getElementById('inputQuestion').value.trim();
+  const errBox = document.getElementById('errAnalyze');
+  errBox.innerHTML = '';
+  if(!q){ errBox.innerHTML = '<div class="err">Escribe primero la pregunta clínica.</div>'; return; }
+  state.question = q;
+  setLoading('loadAnalyze', true);
+  try{
+    const sys = `Eres un especialista en medicina basada en la evidencia (metodología tipo Sackett/Straus, Cochrane, JBI).
+Dada una pregunta o escenario clínico en español, tu tarea es:
+1) Clasificar el tipo de pregunta: terapia/intervención, diagnóstico, etiología/daño, pronóstico, prevención, o cualitativa/experiencia.
+2) Elegir el marco estructurado más adecuado:
+   - PICO: terapia, diagnóstico, prevención (Población, Intervención, Comparación, Outcome/resultado).
+   - PICOS: igual que PICO pero cuando conviene fijar de antemano el diseño de estudio (S), típico de protocolos de revisión sistemática.
+   - PECO: etiología, daño, factores de riesgo o exposiciones ambientales/ocupacionales (Población, Exposición, Comparación, Outcome).
+   - SPIDER: preguntas cualitativas o de experiencia/percepción (Sample, Phenomenon of Interest, Design, Evaluation, Research type).
+3) Extraer cada elemento del marco elegido con un valor conciso en español y una lista de 3 a 5 sinónimos o términos relacionados en INGLÉS (porque PubMed indexa en inglés), útiles para una búsqueda de texto libre.
+Responde EXCLUSIVAMENTE en JSON con esta forma exacta:
+{"framework":"PICO|PICOS|PECO|SPIDER","question_type":"...","rationale":"explicación breve en español de por qué este marco encaja","elements":[{"key":"P","label":"Población / Paciente","value":"...","synonyms":["...","..."]}, ...]}`;
+    const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: q}]);
+    state.framework = out.framework;
+    state.questionType = out.question_type;
+    state.rationale = out.rationale;
+    state.elements = (out.elements||[]).map(e=>({
+      key:e.key, label:e.label, value:e.value||'',
+      synonyms: Array.isArray(e.synonyms)? e.synonyms : [],
+      meshTranslation:'', useOfficial:false, verified:false
+    }));
+    state.dirty = true;
+    renderFramework(); renderPicoGrid();
+    unlockStep(2); setActive(1);
+    document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+  }catch(e){ errBox.innerHTML = errHtml(e); }
+  setLoading('loadAnalyze', false);
+});
+
+/* =========================================================
+   PASO 1 (MANUAL): elegir marco y rellenar a mano
+   ========================================================= */
+document.getElementById('btnManualConfirm').addEventListener('click', ()=>{
+  const q = document.getElementById('inputQuestion').value.trim();
+  const errBox = document.getElementById('errAnalyze');
+  errBox.innerHTML = '';
+  if(!q){ errBox.innerHTML = '<div class="err">Escribe primero la pregunta clínica.</div>'; return; }
+  state.question = q;
+  state.framework = document.getElementById('manualFrameworkSelect').value;
+  state.questionType = '(definido manualmente por el estudiante)';
+  state.rationale = 'Marco elegido manualmente por el estudiante, sin asistencia de IA.';
+  state.elements = FRAMEWORK_TEMPLATES[state.framework].map(([k,l])=>({
+    key:k, label:l, value:'', synonyms:[], meshTranslation:'', useOfficial:false, verified:false
+  }));
+  state.dirty = true;
+  renderFramework(); renderPicoGrid();
+  unlockStep(2); setActive(1);
+  document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+});
+
+function renderFramework(){
+  const box = document.getElementById('frameworkInfo');
+  box.innerHTML = `
+    <span class="framework-badge">${state.framework}</span>
+    <div class="hint" style="margin-top:6px;"><strong>Tipo de pregunta:</strong> ${escapeHtml(state.questionType)}</div>
+    <div class="hint">${escapeHtml(state.rationale)}</div>
+  `;
+}
+
+function renderPicoGrid(){
+  const grid = document.getElementById('picoGrid');
+  grid.innerHTML = '';
+  state.elements.forEach((el, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'pico-card';
+    card.innerHTML = `
+      <div class="k">${escapeHtml(el.key)}</div>
+      <div class="l">${escapeHtml(el.label)}</div>
+      <input type="text" data-idx="${idx}" class="pico-value" placeholder="término principal" value="${escapeAttr(el.value)}">
+      <div class="syn-label">Sinónimos / términos relacionados (en inglés, separados por comas)</div>
+      <input type="text" data-idx="${idx}" class="pico-syn" placeholder="synonym1, synonym2, synonym3" value="${escapeAttr(el.synonyms.join(', '))}">
+      <div class="mesh-status pending" id="meshStatus${idx}">Sin verificar en PubMed todavía.</div>
+      <div id="meshBox${idx}"></div>
+    `;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll('.pico-value').forEach(inp=>inp.addEventListener('input', e=>{
+    state.elements[e.target.dataset.idx].value = e.target.value; state.elements[e.target.dataset.idx].verified = false; state.dirty = true;
+  }));
+  grid.querySelectorAll('.pico-syn').forEach(inp=>inp.addEventListener('input', e=>{
+    state.elements[e.target.dataset.idx].synonyms = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); state.dirty = true;
+  }));
+}
+
+/* =========================================================
+   PASO 2: verificar términos MeSH reales vía PubMed
+   ========================================================= */
+document.getElementById('btnVerifyMesh').addEventListener('click', async ()=>{
+  const errBox = document.getElementById('errMesh');
+  errBox.innerHTML='';
+  const missing = state.elements.filter(el=>!el.value.trim());
+  if(missing.length){ errBox.innerHTML = '<div class="err">Rellena el término principal de todos los elementos antes de verificar.</div>'; return; }
+  setLoading('loadMesh', true);
+  try{
+    for(let i=0;i<state.elements.length;i++){
+      const el = state.elements[i];
+      document.getElementById('meshStatus'+i).textContent = 'Consultando PubMed…';
+      const {translation, count} = await pubmedTranslate(el.value);
+      el.meshTranslation = translation; el.verified = true;
+      const statusEl = document.getElementById('meshStatus'+i);
+      statusEl.className = 'mesh-status ok';
+      statusEl.textContent = '✓ PubMed reconoce '+count.toLocaleString('es-ES')+' registros para este término en solitario.';
+      const boxEl = document.getElementById('meshBox'+i);
+      boxEl.innerHTML = `
+        <div class="mesh-box">${escapeHtml(translation || '(PubMed no propuso traducción a MeSH; se usará como texto libre)')}</div>
+        <div class="chip-row">
+          <span class="chip ${el.useOfficial?'selected':''}" data-idx="${i}" data-mode="official">Usar traducción oficial de PubMed</span>
+          <span class="chip ${!el.useOfficial?'selected':''}" data-idx="${i}" data-mode="manual">Usar mis sinónimos como texto libre</span>
+        </div>
+      `;
+    }
+    document.querySelectorAll('.chip[data-mode]').forEach(chip=>{
+      chip.addEventListener('click', e=>{
+        const idx = e.target.closest('.chip').dataset.idx;
+        state.elements[idx].useOfficial = (e.target.closest('.chip').dataset.mode === 'official');
+        document.getElementById('meshBox'+idx).querySelectorAll('.chip').forEach(c=>{
+          c.classList.toggle('selected', c.dataset.mode === (state.elements[idx].useOfficial? 'official':'manual'));
+        });
+      });
+    });
+    renderFilters();
+    unlockStep(3); setActive(2);
+    document.getElementById('step3').scrollIntoView({behavior:'smooth'});
+  }catch(e){ errBox.innerHTML = errHtml(e); }
+  setLoading('loadMesh', false);
+});
+
+function renderFilters(){
+  const grid = document.getElementById('filtersGrid');
+  grid.innerHTML = '';
+  FILTER_DEFS.forEach(f=>{
+    const div = document.createElement('div');
+    div.className = 'filter-item';
+    div.innerHTML = `<input type="checkbox" id="filter_${f.id}"> <label for="filter_${f.id}">${escapeHtml(f.label)}</label>`;
+    grid.appendChild(div);
+  });
+}
+
+/* =========================================================
+   PASO 3: construir ecuación (con IA o determinista)
+   ========================================================= */
+function readFiltersFromUI(){
+  const activeFilters = FILTER_DEFS.filter(f=>document.getElementById('filter_'+f.id) && document.getElementById('filter_'+f.id).checked);
+  state.years = parseInt(document.getElementById('filterYears').value||'0',10);
+  state.lang = document.getElementById('filterLang').value;
+  state.retmax = parseInt(document.getElementById('filterRetmax').value,10);
+  state.activeFilterLabels = activeFilters.map(f=>f.label);
+  return activeFilters;
+}
+
+async function buildEquationAI(instruction){
+  const activeFilters = readFiltersFromUI();
+  const elementsPayload = state.elements.map(el=>({
+    key: el.key, label: el.label, value: el.value, synonyms: el.synonyms,
+    pubmed_official_translation: el.meshTranslation, use_official_translation: el.useOfficial
+  }));
+  const sys = `Eres un documentalista clínico experto en sintaxis de búsqueda de PubMed/MEDLINE (etiquetas [MeSH Terms], [tiab], [pt], [Mesh], [la], operadores AND/OR/NOT en mayúsculas, agrupación con paréntesis).
+Reglas:
+- Para cada elemento del marco, construye un bloque entre paréntesis. Si "use_official_translation" es true, usa literalmente "pubmed_official_translation" tal cual (es una traducción ya verificada por PubMed, no la reescribas). Si es false, construye "(\\"sinonimo1\\"[tiab] OR \\"sinonimo2\\"[tiab] OR ...)" con el value y los synonyms dados.
+- Combina los bloques de los distintos elementos del marco con AND.
+- Si se indican filtros adicionales, añádelos como bloques adicionales unidos con AND al final; si hay varios tipos de publicación, únelos entre sí con OR dentro de su propio paréntesis.
+- No inventes etiquetas de campo que no existan en PubMed.
+Responde EXCLUSIVAMENTE en JSON: {"equation":"...", "explanation":"explicación breve en español de la lógica booleana usada"}`;
+  const userPayload = {
+    framework: state.framework, elements: elementsPayload,
+    filtros_publication_type: activeFilters.map(f=>f.tag), idioma: state.lang || null,
+    instruccion_de_refinamiento: instruction || null, ecuacion_previa: state.equation || null
+  };
+  const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: JSON.stringify(userPayload)}]);
+  state.equation = out.equation; state.equationExplain = out.explanation;
+  renderEquation();
+}
+
+function buildEquationDeterministic(){
+  const activeFilters = readFiltersFromUI();
+  const blocks = state.elements.map(el=>{
+    if(el.useOfficial && el.meshTranslation){ return '('+el.meshTranslation+')'; }
+    const terms = [el.value, ...el.synonyms].filter(Boolean).map(t=>'"'+String(t).replace(/"/g,'')+'"[tiab]');
+    return terms.length? '('+terms.join(' OR ')+')' : null;
+  }).filter(Boolean);
+  let eq = blocks.join(' AND ');
+  if(activeFilters.length){ eq += ' AND (' + activeFilters.map(f=>f.tag).join(' OR ') + ')'; }
+  state.equation = eq;
+  state.equationExplain = 'Ecuación generada de forma determinista (sin IA): cada elemento se combina con OR entre sus sinónimos o su traducción MeSH verificada, y los elementos se combinan entre sí con AND. Los filtros de tipo de publicación seleccionados se añaden como bloque adicional unido con AND.';
+  renderEquation();
+}
+
+function renderEquation(){
+  document.getElementById('equationBox').textContent = state.equation || '—';
+  document.getElementById('equationExplain').textContent = state.equationExplain || '';
+  const manualBox = document.getElementById('manualEqInput');
+  if(manualBox) manualBox.value = state.equation || '';
+}
+
+document.getElementById('btnBuildEquation').addEventListener('click', async ()=>{
+  const errBox = document.getElementById('errEq');
+  errBox.innerHTML='';
+  setLoading('loadEq', true);
+  try{
+    if(state.useAI){ await buildEquationAI(null); } else { buildEquationDeterministic(); }
+    state.dirty = true;
+    unlockStep(4); unlockStep(5); setActive(3);
+    document.getElementById('step4').scrollIntoView({behavior:'smooth'});
+  }catch(e){ errBox.innerHTML = errHtml(e); }
+  setLoading('loadEq', false);
+});
+
+document.getElementById('btnRefine').addEventListener('click', async ()=>{
+  const instr = document.getElementById('refineInput').value.trim();
+  if(!instr) return;
+  setLoading('loadRefine', true);
+  try{ await buildEquationAI(instr); document.getElementById('refineInput').value=''; }
+  catch(e){ document.getElementById('errSearch').innerHTML = errHtml(e); }
+  setLoading('loadRefine', false);
+});
+
+document.getElementById('btnApplyManualEq').addEventListener('click', ()=>{
+  state.equation = document.getElementById('manualEqInput').value;
+  state.equationExplain = 'Ecuación editada manualmente por el estudiante.';
+  state.dirty = true;
+  renderEquation();
+});
+
+/* =========================================================
+   PASO 4: embudo de evidencia (recuentos reales acumulados)
+   ========================================================= */
+document.getElementById('btnFunnel').addEventListener('click', async ()=>{
+  const wrap = document.getElementById('funnelWrap');
+  const bars = document.getElementById('funnelBars');
+  wrap.style.display='block';
+  bars.innerHTML = '<div class="hint"><span class="loader dark"></span> calculando recuentos reales en PubMed…</div>';
+  try{
+    const blocks = extractParenBlocks(state.equation);
+    let cumulative = []; let rows = [];
+    for(const b of blocks){
+      cumulative.push(b);
+      const term = cumulative.join(' AND ');
+      const {count} = await pubmedTranslate(term);
+      rows.push({label: rows.length===0? 'Elemento 1' : ('+ elemento '+(rows.length+1)), count});
+    }
+    state.funnel = rows;
+    const max = Math.max(...rows.map(r=>r.count), 1);
+    bars.innerHTML = rows.map(r=>`
+      <div class="funnel-row">
+        <div class="funnel-label">${escapeHtml(r.label)}</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:${Math.max(2,(r.count/max*100))}%"></div></div>
+        <div class="funnel-count">${r.count.toLocaleString('es-ES')}</div>
+      </div>
+    `).join('');
+  }catch(e){ bars.innerHTML = errHtml(e); }
+});
+function extractParenBlocks(eq){
+  const blocks = []; let depth=0, start=-1;
+  for(let i=0;i<eq.length;i++){
+    if(eq[i]==='('){ if(depth===0) start=i; depth++; }
+    else if(eq[i]===')'){ depth--; if(depth===0 && start>=0){ blocks.push(eq.slice(start,i+1)); start=-1; } }
+  }
+  return blocks.length? blocks : [eq];
+}
+
+/* =========================================================
+   PASO 5: otras fuentes (Cochrane / bases multidisciplinares)
+   ========================================================= */
+function genericBooleanQuery(){
+  const blocks = state.elements.map(el=>{
+    const terms = [el.value, ...el.synonyms].filter(Boolean).map(t=>'"'+String(t).replace(/"/g,'')+'"');
+    return terms.length? '('+terms.join(' OR ')+')' : null;
+  }).filter(Boolean);
+  return blocks.join(' AND ');
+}
+function renderGenericQuery(){
+  document.getElementById('genericQueryBox').textContent = genericBooleanQuery() || '—';
+}
+document.getElementById('btnCopyGeneric').addEventListener('click', async ()=>{
+  const txt = genericBooleanQuery();
+  try{ await navigator.clipboard.writeText(txt); document.getElementById('copyMsg').textContent = 'Copiado ✓'; }
+  catch(e){ document.getElementById('copyMsg').textContent = 'No se pudo copiar automáticamente; selecciona el texto manualmente.'; }
+  setTimeout(()=>{ document.getElementById('copyMsg').textContent=''; }, 3000);
+});
+['srcCochrane','srcMulti'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', e=>{
+    state.otherSources[id==='srcCochrane'?'cochrane':'multi'] = e.target.checked; state.dirty = true;
+  });
+});
+document.getElementById('srcJustification').addEventListener('input', e=>{ state.otherSources.justification = e.target.value; state.dirty = true; });
+document.getElementById('srcNotes').addEventListener('input', e=>{ state.otherSources.notes = e.target.value; state.dirty = true; });
+
+/* =========================================================
+   PASO 4→6: búsqueda real en PubMed
+   ========================================================= */
+document.getElementById('btnSearch').addEventListener('click', async ()=>{
+  const errBox = document.getElementById('errSearch');
+  errBox.innerHTML='';
+  if(!state.equation || !state.equation.trim()){ errBox.innerHTML = '<div class="err">Genera primero la ecuación de búsqueda.</div>'; return; }
+  setLoading('loadSearch', true);
+  try{
+    renderGenericQuery();
+    let term = state.equation;
+    if(state.years > 0){
+      const minYear = new Date().getFullYear() - state.years;
+      term += ` AND ("${minYear}"[dp] : "3000"[dp])`;
+    }
+    if(state.lang){ term += ` AND ${state.lang}[la]`; }
+    const {count, ids} = await pubmedSearch(term, state.retmax, 'relevance');
+    state.totalCount = count;
+    const summaries = await pubmedSummary(ids);
+    state.results = summaries.map(s=>({...s, abstract:null, screen:null, reason:''}));
+    state.searched = true;
+    state.dirty = true;
+    renderResults();
+    unlockStep(6); unlockStep(7); setActive(5);
+    document.getElementById('step6').scrollIntoView({behavior:'smooth'});
+  }catch(e){ errBox.innerHTML = errHtml(e); }
+  setLoading('loadSearch', false);
+});
+
+function renderResults(){
+  document.getElementById('resultsCount').textContent =
+    `${state.totalCount.toLocaleString('es-ES')} resultados totales en PubMed · mostrando ${state.results.length} (orden por relevancia)`;
+  const list = document.getElementById('resultsList');
+  list.innerHTML = '';
+  state.results.forEach((r, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      ${r.screen ? `<span class="badge ${r.screen.toLowerCase()}">${r.screen}</span>` : ''}
+      <h3>${escapeHtml(r.title)}</h3>
+      <div class="result-meta">${escapeHtml(r.authors)} — <em>${escapeHtml(r.journal)}</em>, ${escapeHtml(r.year)} · PMID: ${r.pmid}${r.doi? ' · DOI: '+escapeHtml(r.doi):''}</div>
+      ${r.reason ? `<div class="result-meta" style="font-style:italic;">Motivo (IA): ${escapeHtml(r.reason)}</div>`:''}
+      <div class="result-actions">
+        <a href="https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Ver en PubMed ↗</a>
+        <button class="btn btn-ghost btn-sm" data-idx="${idx}" data-action="abs">Ver / ocultar resumen</button>
+      </div>
+      <div class="abstract-box" id="abs${idx}"></div>
+    `;
+    list.appendChild(card);
+  });
+  list.querySelectorAll('[data-action=abs]').forEach(btn=>{
+    btn.addEventListener('click', async e=>{
+      const idx = e.target.dataset.idx;
+      const box = document.getElementById('abs'+idx);
+      if(box.classList.contains('show')){ box.classList.remove('show'); return; }
+      if(!state.results[idx].abstract){
+        box.textContent = 'Cargando resumen…'; box.classList.add('show');
+        try{ const txt = await pubmedAbstract(state.results[idx].pmid); state.results[idx].abstract = txt.trim() || '(Sin resumen disponible en PubMed.)'; }
+        catch(err){ state.results[idx].abstract = 'Error al cargar el resumen.'; }
+      }
+      box.textContent = state.results[idx].abstract; box.classList.add('show');
+    });
+  });
+}
+
+/* =========================================================
+   PASO 6: cribado rápido con IA
+   ========================================================= */
+document.getElementById('btnScreen').addEventListener('click', async ()=>{
+  if(!hasAI()) return;
+  setLoading('loadScreen', true);
+  try{
+    const withAbs = [];
+    for(const r of state.results){
+      if(!r.abstract){ try{ r.abstract = (await pubmedAbstract(r.pmid)).trim(); }catch(e){ r.abstract=''; } }
+      withAbs.push({pmid:r.pmid, title:r.title, abstract:(r.abstract||'').slice(0,1200)});
+    }
+    const criteria = state.elements.map(e=>`${e.label}: ${e.value}`).join(' | ');
+    const sys = `Eres un revisor metodológico realizando el cribado de título/resumen de una búsqueda bibliográfica, según los criterios proporcionados.
+Para cada artículo, decide: "Incluir", "Excluir", o "Dudoso". Da una razón muy breve (máx 12 palabras, en español) por artículo.
+Responde EXCLUSIVAMENTE en JSON: {"decisions":[{"pmid":"...","decision":"Incluir|Excluir|Dudoso","reason":"..."}]}`;
+    const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: JSON.stringify({criterios: criteria, articulos: withAbs})}]);
+    const map = {};
+    (out.decisions||[]).forEach(d=> map[d.pmid] = d);
+    state.results.forEach(r=>{ if(map[r.pmid]){ r.screen = map[r.pmid].decision; r.reason = map[r.pmid].reason; } });
+    state.dirty = true;
+    renderResults();
+  }catch(e){ document.getElementById('resultsList').insertAdjacentHTML('afterbegin', errHtml(e)); }
+  setLoading('loadScreen', false);
+});
+
+/* =========================================================
+   PASO 7: párrafo de métodos, rúbrica y exportar
+   ========================================================= */
+document.getElementById('studentName').addEventListener('input', e=>{ state.student.name = e.target.value; state.dirty = true; });
+document.getElementById('studentGroup').addEventListener('input', e=>{ state.student.group = e.target.value; state.dirty = true; });
+document.getElementById('finalAnswer').addEventListener('input', ()=>{ state.dirty = true; });
+
+function generateMethodTemplate(){
+  const otherNotes = [];
+  if(state.otherSources.cochrane) otherNotes.push('Cochrane Library');
+  if(state.otherSources.multi) otherNotes.push('bases de datos internacionales multidisciplinares (p.ej. Scopus, Web of Science, Embase)');
+  const extra = otherNotes.length? ` Adicionalmente, se consultaron: ${otherNotes.join(' y ')}.` : '';
+  const elementsTxt = state.elements.map(e=>e.key+' = '+(e.value||'—')).join('; ');
+  const restr = [];
+  if(state.years>0) restr.push('se restringió la búsqueda a los últimos '+state.years+' años');
+  if(state.lang) restr.push('se limitó el idioma a '+(state.lang==='english'?'inglés':'español'));
+  const restrTxt = restr.length? ' Se aplicaron los siguientes límites: '+restr.join(' y ')+'.' : '';
+  const txt = `Se formuló la pregunta clínica siguiendo el marco ${state.framework} (${elementsTxt}). `+
+    `La búsqueda bibliográfica se realizó en PubMed (MEDLINE) empleando la siguiente ecuación de búsqueda: ${state.equation}.`+
+    restrTxt + extra +
+    ` La búsqueda recuperó un total de ${state.totalCount||0} referencias, de las cuales se revisaron ${state.results.length||0} ordenadas por relevancia.`;
+  document.getElementById('methodParagraph').value = txt;
+  state.dirty = true;
+}
+document.getElementById('btnGenMethodTemplate').addEventListener('click', generateMethodTemplate);
+
+document.getElementById('btnAiPolish').addEventListener('click', async ()=>{
+  const box = document.getElementById('methodParagraph');
+  const msg = document.getElementById('exportMsg');
+  if(!box.value.trim()){ generateMethodTemplate(); }
+  setLoading('loadPolish', true);
+  try{
+    const sys = `Eres un asesor de redacción científica en español. Recibirás un párrafo con la estrategia de búsqueda bibliográfica de un protocolo de investigación.
+Mejora su redacción académica (estilo formal, tercera persona, tiempo pasado, conectores adecuados), SIN cambiar ni inventar ningún dato factual (equación, cifras, marco, filtros).
+Responde EXCLUSIVAMENTE en JSON: {"paragraph":"..."}`;
+    const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: box.value}]);
+    box.value = out.paragraph;
+    state.dirty = true;
+  }catch(e){ msg.innerHTML = errHtml(e); }
+  setLoading('loadPolish', false);
+});
+
+/* ---- checklist según rúbrica real de la asignatura ---- */
+function computeRubricChecklist(){
+  const q = state.question || '';
+  const hasQuestionMark = /\?|¿/.test(q);
+  const elementsComplete = state.elements.length>0 && state.elements.every(e=>e.value && e.value.trim());
+  const usedMesh = state.elements.some(e=>e.useOfficial && e.meshTranslation);
+  const booleanOk = /\bAND\b|\bOR\b|\bNOT\b/.test(state.equation||'');
+  const filtersOk = (state.activeFilterLabels && state.activeFilterLabels.length>0) || state.years!==10 || !!state.lang;
+  const finalAnswerTxt = (document.getElementById('finalAnswer').value||'').trim();
+  const justificationTxt = (state.otherSources.justification||'').trim();
+
+  return [
+    {ok: hasQuestionMark, req:true, label:'A) La pregunta consta explícitamente en forma gramatical de interrogación'},
+    {ok: elementsComplete, req:true, label:'A) Se indican todos los componentes del marco '+(state.framework||'PICO')},
+    {ok: !!justificationTxt, req:true, label:'B) Se justifica la selección de las fuentes de información (Paso 5)'},
+    {ok: state.searched, req:true, label:'B) Se ha utilizado MEDLINE (PubMed) para al menos una búsqueda'},
+    {ok: usedMesh, req:true, label:'B) La búsqueda en MEDLINE incluye Medical Subject Headings (MeSH) verificados'},
+    {ok: !!state.otherSources.multi, req:false, label:'B) (recomendado) Se han consultado bases internacionales como Web of Science o Scopus'},
+    {ok: !!(state.equation && state.equation.trim()), req:true, label:'C) Se señalan las palabras clave / MeSH de la ecuación'},
+    {ok: booleanOk, req:true, label:'C) La ecuación indica los operadores booleanos utilizados'},
+    {ok: filtersOk, req:true, label:'C) Se indican los límites/filtros aplicados a la búsqueda'},
+    {ok: state.searched, req:true, label:'C) Se indican los resultados obtenidos'},
+    {ok: !!finalAnswerTxt, req:true, label:'D) Se ha redactado una respuesta breve a la pregunta formulada'}
+  ];
+}
+function renderRubricChecklist(){
+  const checks = computeRubricChecklist();
+  const box = document.getElementById('rubricBox');
+  box.style.display = 'block';
+  box.innerHTML = checks.map(c=>{
+    const cls = c.ok ? 'ok' : (c.req? 'fail':'rec');
+    const mark = c.ok ? '✓' : (c.req? '✗':'○');
+    return `<div class="rubric-item"><span class="rubric-mark ${cls}">${mark}</span><span>${escapeHtml(c.label)}${!c.req?'<span class="rubric-tag">recomendado</span>':''}</span></div>`;
+  }).join('');
+  return checks;
+}
+document.getElementById('btnCheckRubric').addEventListener('click', renderRubricChecklist);
+
+/* ---- exportar sesión JSON ---- */
+function buildSessionPayload(){
+  return {
+    appVersion: APP_VERSION, savedAt: Date.now(),
+    question: state.question, framework: state.framework, questionType: state.questionType, rationale: state.rationale,
+    elements: state.elements, activeFilterLabels: state.activeFilterLabels, years: state.years, lang: state.lang, retmax: state.retmax,
+    equation: state.equation, equationExplain: state.equationExplain, funnel: state.funnel,
+    totalCount: state.totalCount, results: state.results, searched: state.searched,
+    otherSources: state.otherSources, student: state.student,
+    methodParagraph: document.getElementById('methodParagraph').value,
+    finalAnswer: document.getElementById('finalAnswer').value
+  };
+}
+document.getElementById('btnExportJson').addEventListener('click', ()=>{
+  const msg = document.getElementById('exportMsg');
+  try{
+    const payload = buildSessionPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    downloadBlob(blob, 'evidentia_sesion_'+Date.now()+'.json');
+    msg.innerHTML = '<div class="ok-msg">Sesión exportada en .json (sirve para reanudar en otro dispositivo o como evidencia de la entrega).</div>';
+  }catch(e){ msg.innerHTML = '<div class="err">Error al exportar la sesión: '+escapeHtml(e.message)+'</div>'; }
+});
+
+document.getElementById('btnExportDocx').addEventListener('click', async ()=>{
+  const msg = document.getElementById('exportMsg');
+  try{
+    const { Document, Packer, Paragraph, HeadingLevel, TextRun } = docx;
+    const checks = computeRubricChecklist();
+    const children = [];
+    children.push(new Paragraph({text:'Anexo de estrategia de búsqueda bibliográfica', heading:HeadingLevel.TITLE}));
+    children.push(new Paragraph({text:'Generado con EvidentIA '+APP_VERSION+' ('+APP_BUILD_DATE+') · '+new Date().toLocaleString('es-ES')}));
+    if(state.student.name || state.student.group){
+      children.push(new Paragraph({children:[new TextRun({text:'Estudiante: ', bold:true}), new TextRun(state.student.name||'—')]}));
+      children.push(new Paragraph({children:[new TextRun({text:'Asignatura/grupo: ', bold:true}), new TextRun(state.student.group||'—')]}));
+    }
+    children.push(new Paragraph({text:'A) Pregunta clínica y marco', heading:HeadingLevel.HEADING_1}));
+    children.push(new Paragraph({text:state.question}));
+    children.push(new Paragraph({text:'Marco metodológico: '+state.framework+' ('+state.questionType+')'}));
+    children.push(new Paragraph({text:state.rationale}));
+    state.elements.forEach(el=>{
+      children.push(new Paragraph({children:[new TextRun({text:el.key+' — '+el.label+': ', bold:true}), new TextRun(el.value)]}));
+      children.push(new Paragraph({text:'Sinónimos: '+el.synonyms.join(', ')}));
+      children.push(new Paragraph({text:'Traducción PubMed: '+(el.meshTranslation||'—')}));
+    });
+    children.push(new Paragraph({text:'B) Fuentes de información', heading:HeadingLevel.HEADING_1}));
+    const srcTxt = [state.otherSources.cochrane?'Cochrane Library':null, state.otherSources.multi?'Bases multidisciplinares (Scopus/WoS/Embase)':null].filter(Boolean);
+    children.push(new Paragraph({text:'Fuentes consultadas: MEDLINE (PubMed)'+(srcTxt.length? ', '+srcTxt.join(', '):'')+'.'}));
+    children.push(new Paragraph({text:'Justificación: '+(state.otherSources.justification||'—')}));
+    if(state.otherSources.notes) children.push(new Paragraph({text:'Notas: '+state.otherSources.notes}));
+    children.push(new Paragraph({text:'C) Ecuaciones de búsqueda', heading:HeadingLevel.HEADING_1}));
+    children.push(new Paragraph({text:'Ecuación (MEDLINE/PubMed): '+state.equation}));
+    children.push(new Paragraph({text:state.equationExplain}));
+    if(state.activeFilterLabels && state.activeFilterLabels.length) children.push(new Paragraph({text:'Filtros aplicados: '+state.activeFilterLabels.join(', ')}));
+    children.push(new Paragraph({text:'Resultados obtenidos: '+state.totalCount+' totales en PubMed, se muestran '+state.results.length+' por relevancia.'}));
+    const methodTxt = document.getElementById('methodParagraph').value;
+    if(methodTxt.trim()) children.push(new Paragraph({text:methodTxt}));
+    state.results.forEach(r=>{
+      const line = r.title+' — '+r.authors+' — '+r.journal+', '+r.year+' (PMID: '+r.pmid+')'+(r.screen? ' ['+r.screen+']':'');
+      children.push(new Paragraph({text:line}));
+    });
+    children.push(new Paragraph({text:'D) Respuesta a la pregunta formulada', heading:HeadingLevel.HEADING_1}));
+    children.push(new Paragraph({text:document.getElementById('finalAnswer').value || '—'}));
+    children.push(new Paragraph({text:'Autoevaluación según rúbrica de la asignatura', heading:HeadingLevel.HEADING_2}));
+    checks.forEach(c=>{
+      children.push(new Paragraph({text:(c.ok?'✓ ':'✗ ')+c.label+(!c.req?' (recomendado)':'')}));
+    });
+    const doc = new Document({sections:[{children}]});
+    const blob = await Packer.toBlob(doc);
+    downloadBlob(blob, 'evidentia_busqueda_'+Date.now()+'.docx');
+    msg.innerHTML = '<div class="ok-msg">Documento Word generado.</div>';
+  }catch(e){ msg.innerHTML = '<div class="err">Error al exportar a Word: '+escapeHtml(e.message)+'</div>'; }
+});
+
+document.getElementById('btnExportPdf').addEventListener('click', ()=>{
+  const msg = document.getElementById('exportMsg');
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 15;
+    const checks = computeRubricChecklist();
+    const line = (txt, size=11, gap=6, bold=false)=>{
+      doc.setFontSize(size); doc.setFont(undefined, bold?'bold':'normal');
+      const split = doc.splitTextToSize(txt, 180);
+      split.forEach(s=>{ if(y>280){ doc.addPage(); y=15; } doc.text(s, 15, y); y += gap; });
+    };
+    line('Anexo de estrategia de búsqueda bibliográfica', 15, 8, true);
+    line('EvidentIA '+APP_VERSION+' ('+APP_BUILD_DATE+') · '+new Date().toLocaleString('es-ES'), 9, 8);
+    if(state.student.name) line('Estudiante: '+state.student.name+' — '+state.student.group, 9, 8);
+    line('A) Pregunta clínica', 12, 7, true); line(state.question);
+    line('Marco: '+state.framework+' ('+state.questionType+')', 12, 7, true); line(state.rationale);
+    line('B) Fuentes', 12, 7, true);
+    line('Justificación: '+(state.otherSources.justification||'—'), 9, 5);
+    line('C) Ecuación de búsqueda (MEDLINE/PubMed)', 12, 7, true); line(state.equation, 9, 5);
+    line('Resultados: '+state.totalCount+' totales, se muestran '+state.results.length, 9, 5);
+    const methodTxt = document.getElementById('methodParagraph').value;
+    if(methodTxt.trim()){ line('Párrafo de métodos', 12, 7, true); line(methodTxt, 9, 5); }
+    state.results.forEach(r=>{ line('• '+r.title+' — '+r.journal+', '+r.year+' (PMID '+r.pmid+')'+(r.screen?' ['+r.screen+']':''), 9, 5); });
+    line('D) Respuesta a la pregunta', 12, 7, true); line(document.getElementById('finalAnswer').value || '—');
+    line('Autoevaluación según rúbrica', 12, 7, true);
+    checks.forEach(c=>{ line((c.ok?'✓ ':'✗ ')+c.label, 9, 5); });
+    doc.save('evidentia_busqueda_'+Date.now()+'.pdf');
+    msg.innerHTML = '<div class="ok-msg">PDF generado.</div>';
+  }catch(e){ msg.innerHTML = '<div class="err">Error al exportar a PDF: '+escapeHtml(e.message)+'</div>'; }
+});
+
+document.getElementById('btnSaveHistory').addEventListener('click', async ()=>{
+  const msg = document.getElementById('exportMsg');
+  try{
+    await dbSave(buildSessionPayload());
+    state.dirty = false;
+    msg.innerHTML = '<div class="ok-msg">Sesión guardada en el historial local.</div>';
+  }catch(e){ msg.innerHTML = '<div class="err">Error al guardar: '+escapeHtml(e.message)+'</div>'; }
+});
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+}
+
+/* =========================================================
+   HISTORIAL (drawer)
+   ========================================================= */
+const drawer = document.getElementById('drawer');
+const overlay = document.getElementById('overlay');
+document.getElementById('btnHistory').addEventListener('click', async ()=>{
+  drawer.classList.add('open'); overlay.classList.add('show');
+  await renderHistory();
+});
+overlay.addEventListener('click', ()=>{ drawer.classList.remove('open'); overlay.classList.remove('show'); closeSettings(); });
+async function renderHistory(){
+  const list = document.getElementById('histList');
+  const items = await dbList();
+  if(!items.length){ list.innerHTML = '<p class="hint">Todavía no has guardado ninguna búsqueda.</p>'; return; }
+  list.innerHTML = items.map(it=>`
+    <div class="hist-item">
+      <div class="q">${escapeHtml((it.question||'').slice(0,90))}${it.question && it.question.length>90?'…':''}</div>
+      <div class="meta">${it.framework} · ${new Date(it.savedAt||it.timestamp).toLocaleString('es-ES')} · ${(it.results||[]).length} resultados</div>
+      <div class="hist-actions">
+        <button class="btn btn-ghost btn-sm" data-id="${it.id}" data-act="load">Reabrir</button>
+        <button class="btn btn-ghost btn-sm" data-id="${it.id}" data-act="del">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('[data-act=load]').forEach(b=>b.addEventListener('click', async e=>{
+    const items = await dbList();
+    const it = items.find(x=>x.id==e.target.dataset.id);
+    if(!it) return;
+    loadSession(it);
+    drawer.classList.remove('open'); overlay.classList.remove('show');
+  }));
+  list.querySelectorAll('[data-act=del]').forEach(b=>b.addEventListener('click', async e=>{
+    await dbDelete(parseInt(e.target.dataset.id,10));
+    renderHistory();
+  }));
+}
+function loadSession(it){
+  state.question = it.question || ''; state.framework = it.framework; state.questionType = it.questionType || '';
+  state.rationale = it.rationale || ''; state.elements = it.elements || [];
+  state.equation = it.equation || ''; state.equationExplain = it.equationExplain || '';
+  state.activeFilterLabels = it.activeFilterLabels || [];
+  state.years = (it.years!==undefined)? it.years : 10; state.lang = it.lang || ''; state.retmax = it.retmax || 50;
+  state.funnel = it.funnel || [];
+  state.totalCount = it.totalCount || 0; state.results = it.results || []; state.searched = !!it.searched;
+  state.otherSources = it.otherSources || {cochrane:false, multi:false, justification:'', notes:''};
+  state.student = it.student || {name:'', group:''};
+  state.dirty = false;
+
+  document.getElementById('inputQuestion').value = state.question;
+  document.getElementById('studentName').value = state.student.name || '';
+  if(state.student.group) document.getElementById('studentGroup').value = state.student.group;
+  document.getElementById('filterYears').value = state.years;
+  document.getElementById('filterLang').value = state.lang;
+  document.getElementById('filterRetmax').value = String(state.retmax);
+  document.getElementById('srcCochrane').checked = !!state.otherSources.cochrane;
+  document.getElementById('srcMulti').checked = !!state.otherSources.multi;
+  document.getElementById('srcJustification').value = state.otherSources.justification || '';
+  document.getElementById('srcNotes').value = state.otherSources.notes || '';
+  document.getElementById('methodParagraph').value = it.methodParagraph || '';
+  document.getElementById('finalAnswer').value = it.finalAnswer || '';
+
+  renderFramework(); renderPicoGrid(); renderFilters();
+  FILTER_DEFS.forEach(f=>{ const el=document.getElementById('filter_'+f.id); if(el) el.checked = state.activeFilterLabels.includes(f.label); });
+  renderEquation(); renderGenericQuery(); renderResults();
+  document.getElementById('rubricBox').style.display = 'none';
+  [2,3,4,5,6,7].forEach(unlockStep);
+  setActive(6);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* =========================================================
+   NUEVA BÚSQUEDA (reset)
+   ========================================================= */
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(state.dirty && !confirm('Tienes una búsqueda sin guardar en el historial. ¿Seguro que quieres empezar una nueva y perder el progreso actual?')) return;
+  window.location.reload();
+});
+window.addEventListener('beforeunload', e=>{
+  if(state.dirty){ e.preventDefault(); e.returnValue=''; }
+});
+
+/* =========================================================
+   CONFIGURACIÓN (modal)
+   ========================================================= */
+const settingsModal = document.getElementById('settingsModal');
+function openSettings(){
+  document.getElementById('cfgApiKey').value = cfg().apiKey;
+  document.getElementById('cfgModel').value = cfg().model;
+  document.getElementById('cfgNcbiKey').value = cfg().ncbiKey;
+  document.getElementById('cfgEmail').value = cfg().email;
+  settingsModal.classList.add('show');
+}
+function closeSettings(){ settingsModal.classList.remove('show'); }
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
+document.getElementById('btnSaveSettings').addEventListener('click', ()=>{
+  localStorage.setItem('ia_openai_key', document.getElementById('cfgApiKey').value.trim());
+  localStorage.setItem('ia_openai_model', document.getElementById('cfgModel').value);
+  localStorage.setItem('ia_ncbi_key', document.getElementById('cfgNcbiKey').value.trim());
+  localStorage.setItem('ia_ncbi_email', document.getElementById('cfgEmail').value.trim());
+  closeSettings();
+  refreshAIAvailabilityUI();
+});
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+function setLoading(id, isLoading){
+  document.getElementById(id).innerHTML = isLoading ? '<span class="loader"></span>' : '';
+}
+function escapeHtml(s){
+  return (s===undefined||s===null? '' : String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+setMode(hasAI() ? 'ia' : 'manual');
+refreshAIAvailabilityUI();
+if(!hasAI()){ setTimeout(openSettings, 400); }
+</script>
+</body>
+</html>
