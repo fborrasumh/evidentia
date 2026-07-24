@@ -132,7 +132,7 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .mesh-status.pending{color:var(--ink-faint);}
 .mesh-box{margin-top:8px; background:#fff; border:1px dashed var(--line-strong); border-radius:var(--radius); padding:8px 10px; font-family:var(--mono); font-size:11.5px; color:var(--navy-light); word-break:break-word;}
 .chip-row{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
-.chip{font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-soft);}
+.chip{font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-soft); text-decoration:none; display:inline-block;}
 .chip.selected{background:var(--navy); color:#fff; border-color:var(--navy);}
 
 /* ---------- filters ---------- */
@@ -317,7 +317,7 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
       <div class="step-head">
         <div><div class="eyebrow">Paso 3</div><h2>Filtros de calidad de evidencia</h2></div>
       </div>
-      <p class="hint">Selecciona los filtros metodológicos que se traducirán a etiquetas de campo reales de PubMed (Publication Type, MeSH, idioma, fecha).</p>
+      <p class="hint">Selecciona los filtros metodológicos que se traducirán a etiquetas de campo reales de PubMed (Publication Type, MeSH, idioma, fecha). Los elementos PICO siempre se combinan solo con AND; si marcas varios filtros de tipo de estudio, esos se combinan entre sí con OR (es una única categoría) y con AND respecto al resto — la ecuación final no mezcla texto libre ni [All Fields].</p>
       <div class="filters-grid" id="filtersGrid"></div>
       <div class="row" style="margin-top:6px;">
         <div style="flex:1; min-width:160px;">
@@ -519,8 +519,8 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
 /* =========================================================
    VERSIÓN
    ========================================================= */
-const APP_VERSION = 'v3.0';
-const APP_BUILD_DATE = '2026-07-23';
+const APP_VERSION = 'v3.1';
+const APP_BUILD_DATE = '2026-07-24';
 document.getElementById('appFooter').textContent =
   `EvidentIA ${APP_VERSION} (${APP_BUILD_DATE}) · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia`;
 
@@ -562,10 +562,10 @@ const DEMO_CASE = {
   question: '¿En pacientes adultos con fibrilación auricular no valvular, los anticoagulantes orales de acción directa reducen el riesgo de ictus isquémico en comparación con warfarina?',
   framework: 'PICO',
   elements: [
-    {key:'P', label:'Población / Paciente', value:'nonvalvular atrial fibrillation', synonyms:['atrial fibrillation','AF']},
-    {key:'I', label:'Intervención', value:'direct oral anticoagulants', synonyms:['DOAC','NOAC','apixaban','rivaroxaban','dabigatran']},
-    {key:'C', label:'Comparación', value:'warfarin', synonyms:['vitamin K antagonist']},
-    {key:'O', label:'Resultado (Outcome)', value:'ischemic stroke', synonyms:['stroke prevention']}
+    {key:'P', label:'Población / Paciente', value:'nonvalvular atrial fibrillation', gloss_es:'fibrilación auricular no valvular', synonyms:['atrial fibrillation','AF']},
+    {key:'I', label:'Intervención', value:'direct oral anticoagulants', gloss_es:'anticoagulantes orales de acción directa', synonyms:['DOAC','NOAC','apixaban','rivaroxaban','dabigatran']},
+    {key:'C', label:'Comparación', value:'warfarin', gloss_es:'warfarina', synonyms:['vitamin K antagonist']},
+    {key:'O', label:'Resultado (Outcome)', value:'ischemic stroke', gloss_es:'ictus isquémico', synonyms:['stroke prevention']}
   ]
 };
 
@@ -765,8 +765,6 @@ function setMode(mode){
   document.getElementById('modeManual').checked = !state.useAI;
   document.getElementById('aiOnlyAnalyze').style.display = state.useAI? 'block':'none';
   document.getElementById('manualFrameworkPicker').style.display = state.useAI? 'none':'block';
-  document.getElementById('refineAIRow').style.display = state.useAI? 'flex':'none';
-  document.getElementById('refineManualRow').style.display = state.useAI? 'none':'block';
 }
 document.querySelectorAll('input[name=workMode]').forEach(r=>r.addEventListener('change', e=>setMode(e.target.value)));
 
@@ -775,6 +773,9 @@ function refreshAIAvailabilityUI(){
   document.getElementById('btnScreen').disabled = !avail;
   document.getElementById('btnScreen').title = avail? '' : 'Requiere una clave de OpenAI configurada (⚙ Configuración).';
   document.getElementById('btnAiPolish').style.display = avail? 'inline-flex':'none';
+  // La ecuación base siempre es determinista y precisa; la IA (si hay clave) solo se ofrece para refinarla.
+  document.getElementById('refineAIRow').style.display = avail? 'flex':'none';
+  document.getElementById('refineManualRow').style.display = avail? 'none':'block';
 }
 
 /* =========================================================
@@ -787,7 +788,7 @@ document.getElementById('btnDemo').addEventListener('click', ()=>{
   state.framework = DEMO_CASE.framework;
   state.questionType = 'Terapia / tratamiento — caso de ejemplo';
   state.rationale = 'Caso ilustrativo precargado para que veas el flujo completo. A partir de aquí, todos los datos que obtengas (verificación MeSH, ecuación, resultados) son reales y en vivo desde PubMed: solo la pregunta y el PICO de partida están precargados.';
-  state.elements = DEMO_CASE.elements.map(e=>({...e, synonyms:[...e.synonyms], meshTranslation:'', useOfficial:false, verified:false}));
+  state.elements = DEMO_CASE.elements.map(e=>({...e, synonyms:[...e.synonyms], gloss_es:e.gloss_es||'', meshHeading:'', meshCandidates:[], useOfficial:false, verified:false}));
   document.getElementById('modeManual').checked = true; setMode('manual');
   state.dirty = false;
   renderFramework(); renderPicoGrid();
@@ -833,17 +834,17 @@ Dada una pregunta o escenario clínico en español, tu tarea es:
    - PICOS: igual que PICO pero cuando conviene fijar de antemano el diseño de estudio (S), típico de protocolos de revisión sistemática.
    - PECO: etiología, daño, factores de riesgo o exposiciones ambientales/ocupacionales (Población, Exposición, Comparación, Outcome).
    - SPIDER: preguntas cualitativas o de experiencia/percepción (Sample, Phenomenon of Interest, Design, Evaluation, Research type).
-3) Extraer cada elemento del marco elegido con un valor conciso en español y una lista de 3 a 5 sinónimos o términos relacionados en INGLÉS (porque PubMed indexa en inglés), útiles para una búsqueda de texto libre.
+3) Extraer cada elemento del marco elegido. IMPORTANTE: el campo "value" debe estar EN INGLÉS y ser un término buscable en MEDLINE (nunca en español), porque se usará directamente para consultar la base de datos MeSH de PubMed. Además da un "gloss_es" (una glosa breve en español, solo para que el estudiante entienda el término, que NO se usa en ninguna búsqueda). Incluye también una lista de 3 a 5 sinónimos o términos relacionados, también EN INGLÉS.
 Responde EXCLUSIVAMENTE en JSON con esta forma exacta:
-{"framework":"PICO|PICOS|PECO|SPIDER","question_type":"...","rationale":"explicación breve en español de por qué este marco encaja","elements":[{"key":"P","label":"Población / Paciente","value":"...","synonyms":["...","..."]}, ...]}`;
+{"framework":"PICO|PICOS|PECO|SPIDER","question_type":"...","rationale":"explicación breve en español de por qué este marco encaja","elements":[{"key":"P","label":"Población / Paciente","value":"english searchable term","gloss_es":"breve glosa en español","synonyms":["english synonym 1","english synonym 2"]}, ...]}`;
     const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: q}]);
     state.framework = out.framework;
     state.questionType = out.question_type;
     state.rationale = out.rationale;
     state.elements = (out.elements||[]).map(e=>({
-      key:e.key, label:e.label, value:e.value||'',
+      key:e.key, label:e.label, value:e.value||'', gloss_es:e.gloss_es||'',
       synonyms: Array.isArray(e.synonyms)? e.synonyms : [],
-      meshTranslation:'', useOfficial:false, verified:false
+      meshHeading:'', meshCandidates:[], useOfficial:false, verified:false
     }));
     state.dirty = true;
     renderFramework(); renderPicoGrid();
@@ -866,7 +867,7 @@ document.getElementById('btnManualConfirm').addEventListener('click', ()=>{
   state.questionType = '(definido manualmente por el estudiante)';
   state.rationale = 'Marco elegido manualmente por el estudiante, sin asistencia de IA.';
   state.elements = FRAMEWORK_TEMPLATES[state.framework].map(([k,l])=>({
-    key:k, label:l, value:'', synonyms:[], meshTranslation:'', useOfficial:false, verified:false
+    key:k, label:l, value:'', gloss_es:'', synonyms:[], meshHeading:'', meshCandidates:[], useOfficial:false, verified:false
   }));
   state.dirty = true;
   renderFramework(); renderPicoGrid();
@@ -892,7 +893,8 @@ function renderPicoGrid(){
     card.innerHTML = `
       <div class="k">${escapeHtml(el.key)}</div>
       <div class="l">${escapeHtml(el.label)}</div>
-      <input type="text" data-idx="${idx}" class="pico-value" placeholder="término principal" value="${escapeAttr(el.value)}">
+      <input type="text" data-idx="${idx}" class="pico-value" placeholder="término principal EN INGLÉS (MEDLINE indexa en inglés)" value="${escapeAttr(el.value)}">
+      ${el.gloss_es? `<div class="syn-label" style="font-style:italic;">🇪🇸 ${escapeHtml(el.gloss_es)}</div>` : ''}
       <div class="syn-label">Sinónimos / términos relacionados (en inglés, separados por comas)</div>
       <input type="text" data-idx="${idx}" class="pico-syn" placeholder="synonym1, synonym2, synonym3" value="${escapeAttr(el.synonyms.join(', '))}">
       <div class="mesh-status pending" id="meshStatus${idx}">Sin verificar en PubMed todavía.</div>
@@ -911,6 +913,57 @@ function renderPicoGrid(){
 /* =========================================================
    PASO 2: verificar términos MeSH reales vía PubMed
    ========================================================= */
+// Extrae los encabezamientos MeSH candidatos de una querytranslation ya restringida al campo [MeSH Terms]
+function extractMeshHeadings(translation){
+  const out = []; const re = /"([^"]+)"\[MeSH Terms\]/g; let m;
+  while((m = re.exec(translation)) !== null){ if(!out.includes(m[1])) out.push(m[1]); }
+  return out;
+}
+function renderMeshBox(idx){
+  const el = state.elements[idx];
+  const boxEl = document.getElementById('meshBox'+idx);
+  const meshLink = 'https://www.ncbi.nlm.nih.gov/mesh/?term=' + encodeURIComponent(el.value);
+  if(el.meshCandidates.length===0){
+    boxEl.innerHTML = `
+      <div class="mesh-box">✗ PubMed no reconoce "${escapeHtml(el.value)}" como encabezamiento MeSH.</div>
+      <div class="chip-row">
+        <a class="chip" href="${meshLink}" target="_blank" rel="noopener">Buscar en MeSH Database ↗</a>
+        <span class="chip ${!el.useOfficial?'selected':''}" data-idx="${idx}" data-mode="manual">Usar como texto libre (no cumple el requisito de MeSH puro de la rúbrica)</span>
+      </div>`;
+  } else {
+    boxEl.innerHTML = `
+      <div class="syn-label">Encabezamiento(s) MeSH reconocido(s) por PubMed — elige exactamente uno:</div>
+      <div class="chip-row">
+        ${el.meshCandidates.map(h=>`<span class="chip ${el.useOfficial && el.meshHeading===h?'selected':''}" data-idx="${idx}" data-mode="official" data-heading="${escapeAttr(h)}">${escapeHtml(h)}</span>`).join('')}
+        <span class="chip ${!el.useOfficial?'selected':''}" data-idx="${idx}" data-mode="manual">Usar mis sinónimos como texto libre (no recomendado)</span>
+      </div>
+      <div class="mesh-box" id="meshCount${idx}">${el.useOfficial? '"'+escapeHtml(el.meshHeading)+'"[Mesh]' : '(no seleccionado)'}</div>
+      <a class="chip" style="margin-top:6px;" href="${meshLink}" target="_blank" rel="noopener">Ver en MeSH Database ↗</a>`;
+  }
+  boxEl.querySelectorAll('.chip[data-mode]').forEach(chip=>{
+    chip.addEventListener('click', async e=>{
+      const c = e.target.closest('.chip');
+      const i = c.dataset.idx;
+      if(c.dataset.mode === 'official'){
+        state.elements[i].useOfficial = true;
+        state.elements[i].meshHeading = c.dataset.heading;
+      } else {
+        state.elements[i].useOfficial = false;
+      }
+      state.dirty = true;
+      renderMeshBox(i);
+      if(state.elements[i].useOfficial){
+        const countBox = document.getElementById('meshCount'+i);
+        if(countBox) countBox.textContent = 'Consultando recuento…';
+        try{
+          const {count} = await pubmedTranslate('"'+state.elements[i].meshHeading+'"[Mesh]');
+          const cb = document.getElementById('meshCount'+i);
+          if(cb) cb.textContent = '"'+state.elements[i].meshHeading+'"[Mesh]  ·  '+count.toLocaleString('es-ES')+' registros en PubMed';
+        }catch(err){ /* silencioso, no crítico */ }
+      }
+    });
+  });
+}
 document.getElementById('btnVerifyMesh').addEventListener('click', async ()=>{
   const errBox = document.getElementById('errMesh');
   errBox.innerHTML='';
@@ -920,30 +973,26 @@ document.getElementById('btnVerifyMesh').addEventListener('click', async ()=>{
   try{
     for(let i=0;i<state.elements.length;i++){
       const el = state.elements[i];
-      document.getElementById('meshStatus'+i).textContent = 'Consultando PubMed…';
-      const {translation, count} = await pubmedTranslate(el.value);
-      el.meshTranslation = translation; el.verified = true;
+      document.getElementById('meshStatus'+i).textContent = 'Consultando la base de datos MeSH…';
+      // Búsqueda restringida al campo [MeSH Terms]: sin mapeo automático a All Fields, sin texto libre.
+      const {translation, count} = await pubmedTranslate('"'+el.value.replace(/"/g,'')+'"[MeSH Terms]');
+      el.meshCandidates = extractMeshHeadings(translation);
+      el.verified = true;
+      if(el.meshCandidates.length){
+        el.useOfficial = true; el.meshHeading = el.meshCandidates[0];
+      } else {
+        el.useOfficial = false; el.meshHeading = '';
+      }
       const statusEl = document.getElementById('meshStatus'+i);
-      statusEl.className = 'mesh-status ok';
-      statusEl.textContent = '✓ PubMed reconoce '+count.toLocaleString('es-ES')+' registros para este término en solitario.';
-      const boxEl = document.getElementById('meshBox'+i);
-      boxEl.innerHTML = `
-        <div class="mesh-box">${escapeHtml(translation || '(PubMed no propuso traducción a MeSH; se usará como texto libre)')}</div>
-        <div class="chip-row">
-          <span class="chip ${el.useOfficial?'selected':''}" data-idx="${i}" data-mode="official">Usar traducción oficial de PubMed</span>
-          <span class="chip ${!el.useOfficial?'selected':''}" data-idx="${i}" data-mode="manual">Usar mis sinónimos como texto libre</span>
-        </div>
-      `;
+      if(el.meshCandidates.length){
+        statusEl.className = 'mesh-status ok';
+        statusEl.textContent = '✓ PubMed reconoce '+el.meshCandidates.length+' encabezamiento(s) MeSH para este término ('+count.toLocaleString('es-ES')+' registros combinados).';
+      } else {
+        statusEl.className = 'mesh-status'; statusEl.style.color = 'var(--red)';
+        statusEl.textContent = '✗ No se reconoce como encabezamiento MeSH.';
+      }
+      renderMeshBox(i);
     }
-    document.querySelectorAll('.chip[data-mode]').forEach(chip=>{
-      chip.addEventListener('click', e=>{
-        const idx = e.target.closest('.chip').dataset.idx;
-        state.elements[idx].useOfficial = (e.target.closest('.chip').dataset.mode === 'official');
-        document.getElementById('meshBox'+idx).querySelectorAll('.chip').forEach(c=>{
-          c.classList.toggle('selected', c.dataset.mode === (state.elements[idx].useOfficial? 'official':'manual'));
-        });
-      });
-    });
     renderFilters();
     unlockStep(3); setActive(2);
     document.getElementById('step3').scrollIntoView({behavior:'smooth'});
@@ -974,24 +1023,19 @@ function readFiltersFromUI(){
   return activeFilters;
 }
 
+// La IA nunca inventa la sintaxis MeSH: solo reescribe/ajusta la ecuación determinista ya construida,
+// a partir de una instrucción del estudiante (p.ej. "añade filtro pediátrico").
 async function buildEquationAI(instruction){
-  const activeFilters = readFiltersFromUI();
-  const elementsPayload = state.elements.map(el=>({
-    key: el.key, label: el.label, value: el.value, synonyms: el.synonyms,
-    pubmed_official_translation: el.meshTranslation, use_official_translation: el.useOfficial
-  }));
-  const sys = `Eres un documentalista clínico experto en sintaxis de búsqueda de PubMed/MEDLINE (etiquetas [MeSH Terms], [tiab], [pt], [Mesh], [la], operadores AND/OR/NOT en mayúsculas, agrupación con paréntesis).
-Reglas:
-- Para cada elemento del marco, construye un bloque entre paréntesis. Si "use_official_translation" es true, usa literalmente "pubmed_official_translation" tal cual (es una traducción ya verificada por PubMed, no la reescribas). Si es false, construye "(\\"sinonimo1\\"[tiab] OR \\"sinonimo2\\"[tiab] OR ...)" con el value y los synonyms dados.
-- Combina los bloques de los distintos elementos del marco con AND.
-- Si se indican filtros adicionales, añádelos como bloques adicionales unidos con AND al final; si hay varios tipos de publicación, únelos entre sí con OR dentro de su propio paréntesis.
-- No inventes etiquetas de campo que no existan en PubMed.
-Responde EXCLUSIVAMENTE en JSON: {"equation":"...", "explanation":"explicación breve en español de la lógica booleana usada"}`;
-  const userPayload = {
-    framework: state.framework, elements: elementsPayload,
-    filtros_publication_type: activeFilters.map(f=>f.tag), idioma: state.lang || null,
-    instruccion_de_refinamiento: instruction || null, ecuacion_previa: state.equation || null
-  };
+  if(!state.equation){ buildEquationDeterministic(); }
+  const sys = `Eres un documentalista clínico experto en sintaxis de búsqueda de PubMed/MEDLINE.
+Recibirás una ecuación de búsqueda YA CONSTRUIDA de forma precisa (términos MeSH verificados con [Mesh], combinados solo con AND, más algún filtro).
+Tu única tarea es aplicar el ajuste que pide el estudiante, respetando estas reglas estrictas:
+- NO elimines ni reescribas los términos [Mesh] ya presentes salvo que el estudiante lo pida explícitamente.
+- NO añadas [All Fields] ni conviertas términos MeSH en texto libre.
+- Usa AND entre los distintos conceptos (población/intervención/comparación/resultado); usa OR solo dentro de un mismo filtro de tipo de publicación si se combinan varios, nunca entre conceptos distintos.
+- Si el estudiante pide añadir un filtro o límite, exprésalo con la etiqueta de campo real de PubMed correspondiente (p.ej. "Child"[Mesh], "Aged"[Mesh], english[la]).
+Responde EXCLUSIVAMENTE en JSON: {"equation":"...", "explanation":"explicación breve en español del cambio aplicado"}`;
+  const userPayload = { ecuacion_actual: state.equation, instruccion_del_estudiante: instruction };
   const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: JSON.stringify(userPayload)}]);
   state.equation = out.equation; state.equationExplain = out.explanation;
   renderEquation();
@@ -999,15 +1043,20 @@ Responde EXCLUSIVAMENTE en JSON: {"equation":"...", "explanation":"explicación 
 
 function buildEquationDeterministic(){
   const activeFilters = readFiltersFromUI();
+  let anyFreeText = false;
   const blocks = state.elements.map(el=>{
-    if(el.useOfficial && el.meshTranslation){ return '('+el.meshTranslation+')'; }
+    if(el.useOfficial && el.meshHeading){ return '"'+el.meshHeading.replace(/"/g,'')+'"[Mesh]'; }
+    anyFreeText = true;
     const terms = [el.value, ...el.synonyms].filter(Boolean).map(t=>'"'+String(t).replace(/"/g,'')+'"[tiab]');
     return terms.length? '('+terms.join(' OR ')+')' : null;
   }).filter(Boolean);
   let eq = blocks.join(' AND ');
-  if(activeFilters.length){ eq += ' AND (' + activeFilters.map(f=>f.tag).join(' OR ') + ')'; }
+  if(activeFilters.length===1){ eq += ' AND ' + activeFilters[0].tag; }
+  else if(activeFilters.length>1){ eq += ' AND (' + activeFilters.map(f=>f.tag).join(' OR ') + ')'; }
   state.equation = eq;
-  state.equationExplain = 'Ecuación generada de forma determinista (sin IA): cada elemento se combina con OR entre sus sinónimos o su traducción MeSH verificada, y los elementos se combinan entre sí con AND. Los filtros de tipo de publicación seleccionados se añaden como bloque adicional unido con AND.';
+  state.equationExplain = anyFreeText
+    ? 'Aviso: al menos un elemento usa texto libre ([tiab], con OR de sinónimos) porque no tiene un encabezamiento MeSH verificado seleccionado — esto no cumple el requisito de "solo MeSH" de la rúbrica. Vuelve al Paso 2 y elige un encabezamiento MeSH para ese elemento si es posible.'
+    : 'Ecuación construida con un único encabezamiento MeSH verificado por elemento ("Término"[Mesh]), combinados solo con AND. Los filtros de tipo de publicación seleccionados (si hay varios) se combinan entre sí con OR y con el resto mediante AND.';
   renderEquation();
 }
 
@@ -1023,7 +1072,7 @@ document.getElementById('btnBuildEquation').addEventListener('click', async ()=>
   errBox.innerHTML='';
   setLoading('loadEq', true);
   try{
-    if(state.useAI){ await buildEquationAI(null); } else { buildEquationDeterministic(); }
+    buildEquationDeterministic();
     state.dirty = true;
     unlockStep(4); unlockStep(5); setActive(3);
     document.getElementById('step4').scrollIntoView({behavior:'smooth'});
@@ -1076,11 +1125,20 @@ document.getElementById('btnFunnel').addEventListener('click', async ()=>{
   }catch(e){ bars.innerHTML = errHtml(e); }
 });
 function extractParenBlocks(eq){
-  const blocks = []; let depth=0, start=-1;
+  // Divide la ecuación por los "AND" de nivel superior (respetando paréntesis), no por paréntesis:
+  // los bloques MeSH ya no llevan paréntesis envolventes ("Término"[Mesh]).
+  const parts = []; let depth = 0, start = 0;
   for(let i=0;i<eq.length;i++){
-    if(eq[i]==='('){ if(depth===0) start=i; depth++; }
-    else if(eq[i]===')'){ depth--; if(depth===0 && start>=0){ blocks.push(eq.slice(start,i+1)); start=-1; } }
+    const ch = eq[i];
+    if(ch==='(') depth++;
+    else if(ch===')') depth--;
+    if(depth===0 && eq.substr(i,5)===' AND '){
+      parts.push(eq.slice(start,i));
+      start = i+5; i += 4;
+    }
   }
+  parts.push(eq.slice(start));
+  const blocks = parts.map(p=>p.trim()).filter(Boolean);
   return blocks.length? blocks : [eq];
 }
 
@@ -1249,7 +1307,7 @@ function computeRubricChecklist(){
   const q = state.question || '';
   const hasQuestionMark = /\?|¿/.test(q);
   const elementsComplete = state.elements.length>0 && state.elements.every(e=>e.value && e.value.trim());
-  const usedMesh = state.elements.some(e=>e.useOfficial && e.meshTranslation);
+  const usedMesh = state.elements.some(e=>e.useOfficial && e.meshHeading);
   const booleanOk = /\bAND\b|\bOR\b|\bNOT\b/.test(state.equation||'');
   const filtersOk = (state.activeFilterLabels && state.activeFilterLabels.length>0) || state.years!==10 || !!state.lang;
   const finalAnswerTxt = (document.getElementById('finalAnswer').value||'').trim();
@@ -1324,7 +1382,7 @@ document.getElementById('btnExportDocx').addEventListener('click', async ()=>{
     state.elements.forEach(el=>{
       children.push(new Paragraph({children:[new TextRun({text:el.key+' — '+el.label+': ', bold:true}), new TextRun(el.value)]}));
       children.push(new Paragraph({text:'Sinónimos: '+el.synonyms.join(', ')}));
-      children.push(new Paragraph({text:'Traducción PubMed: '+(el.meshTranslation||'—')}));
+      children.push(new Paragraph({text:'Encabezamiento MeSH: '+(el.useOfficial && el.meshHeading? '"'+el.meshHeading+'"[Mesh]' : '— (texto libre, no MeSH)')}));
     });
     children.push(new Paragraph({text:'B) Fuentes de información', heading:HeadingLevel.HEADING_1}));
     const srcTxt = [state.otherSources.cochrane?'Cochrane Library':null, state.otherSources.multi?'Bases multidisciplinares (Scopus/WoS/Embase)':null].filter(Boolean);
