@@ -36,7 +36,6 @@ button{font-family:var(--sans); cursor:pointer;}
 input,textarea,select{font-family:var(--sans); font-size:14px;}
 :focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
 
-/* ---------- header ---------- */
 header.top{
   background:var(--navy); color:#EFEAD9; padding:22px 32px;
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
@@ -52,7 +51,6 @@ header.top{
 }
 .icon-btn:hover{border-color:var(--gold); color:var(--gold-light);}
 
-/* ---------- layout ---------- */
 .shell{display:grid; grid-template-columns:64px 1fr; min-height:calc(100vh - 76px);}
 .stepper{
   background:var(--paper-dim); border-right:1px solid var(--line);
@@ -67,7 +65,7 @@ header.top{
 .step-dot.active{border-color:var(--navy); color:var(--navy); background:#fff; font-weight:600;}
 .step-dot.done{border-color:var(--green); color:#fff; background:var(--green);}
 .step-line{width:1.5px; flex:1; background:var(--line-strong); min-height:16px;}
-main{padding:32px 40px 80px; max-width:920px;}
+main{padding:32px 40px 80px; max-width:960px;}
 
 section.step{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -84,7 +82,6 @@ details.learn summary::-webkit-details-marker{display:none;}
 details.learn summary::before{content:'💡 '; }
 details.learn .body{padding:0 14px 12px; color:var(--ink-soft); line-height:1.6;}
 
-/* ---------- form basics ---------- */
 label.field-label{display:block; font-size:12.5px; font-weight:600; color:var(--navy-light); margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px;}
 textarea, input[type=text], input[type=password], input[type=number], select{
   width:100%; border:1px solid var(--line-strong); border-radius:var(--radius); padding:10px 12px;
@@ -109,38 +106,40 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
 .spacer-top{margin-top:16px;}
 
-/* ---------- mode switch ---------- */
 .mode-switch{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px; background:var(--paper-dim); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px;}
 .mode-option{display:flex; align-items:flex-start; gap:8px; font-size:13px; cursor:pointer; flex:1; min-width:220px;}
 .mode-option input{width:auto; margin-top:3px;}
 .mode-option .t{font-weight:600; color:var(--navy); display:block;}
 .mode-option .d{color:var(--ink-soft); font-size:12px;}
 
-/* ---------- PICO cards ---------- */
 .framework-badge{
   display:inline-block; font-family:var(--mono); font-size:12px; background:var(--navy); color:#fff;
   padding:3px 10px; border-radius:20px; margin-bottom:4px;
 }
-.pico-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:14px;}
+.pico-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:14px; margin-top:14px;}
 .pico-card{border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:var(--radius); padding:14px 16px; background:var(--paper-dim);}
 .pico-card .k{font-family:var(--mono); font-size:11px; color:var(--gold); font-weight:700; letter-spacing:1px;}
 .pico-card .l{font-size:12.5px; color:var(--ink-soft); margin-bottom:8px;}
-.pico-card input{margin-bottom:6px;}
-.pico-card .syn-label{font-size:11px; color:var(--ink-faint); margin-top:4px;}
-.mesh-status{margin-top:8px; font-size:12px; font-family:var(--mono);}
-.mesh-status.ok{color:var(--green);}
-.mesh-status.pending{color:var(--ink-faint);}
-.mesh-box{margin-top:8px; background:#fff; border:1px dashed var(--line-strong); border-radius:var(--radius); padding:8px 10px; font-family:var(--mono); font-size:11.5px; color:var(--navy-light); word-break:break-word;}
-.chip-row{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
-.chip{font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-soft); text-decoration:none; display:inline-block;}
-.chip.selected{background:var(--navy); color:#fff; border-color:var(--navy);}
+.pico-card textarea{min-height:52px; font-size:13px; margin-bottom:10px;}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px; min-height:10px;}
+.chip{font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--line-strong); background:#fff; cursor:default; color:var(--ink-soft); text-decoration:none; display:inline-flex; align-items:center; gap:6px;}
+.chip.mesh{border-color:#BFD9D6; background:var(--green-bg); color:var(--green);}
+.chip.tiab{border-color:#E5D6B9; background:var(--amber-bg); color:var(--gold);}
+.chip.pending{border-color:var(--line-strong); background:#fff; color:var(--ink-faint); font-style:italic;}
+.chip .x{cursor:pointer; color:inherit; opacity:.55; font-size:13px; line-height:1;}
+.chip .x:hover{opacity:1; color:var(--red);}
+.chip.linklike{cursor:pointer;}
+.addterm{display:flex; gap:6px; flex-wrap:wrap;}
+.addterm input{flex:1; min-width:140px; font-size:13px; padding:8px 10px;}
+.addterm select{width:auto; font-size:12px; padding:8px 8px;}
+.add-status{font-size:11.5px; margin-top:5px; min-height:14px;}
+.add-status.err{color:var(--red);}
+.add-status.ok{color:var(--green);}
 
-/* ---------- filters ---------- */
 .filters-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px 18px; margin:14px 0;}
 .filter-item{display:flex; align-items:center; gap:8px; font-size:13px;}
 .filter-item input{width:auto;}
 
-/* ---------- equation ---------- */
 .equation-box{
   background:var(--navy); color:#E8E2C8; font-family:var(--mono); font-size:13.5px;
   padding:16px 18px; border-radius:var(--radius); white-space:pre-wrap; word-break:break-word;
@@ -151,7 +150,6 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .refine-row input{flex:1;}
 .manual-eq-box textarea{font-family:var(--mono); font-size:12.5px; min-height:70px;}
 
-/* ---------- funnel ---------- */
 .funnel{margin-top:20px;}
 .funnel-row{display:grid; grid-template-columns:110px 1fr 70px; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px;}
 .funnel-label{font-family:var(--mono); color:var(--navy-light); text-align:right;}
@@ -159,13 +157,11 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .funnel-fill{height:100%; background:linear-gradient(90deg,var(--blue),var(--navy)); transition:width .5s ease;}
 .funnel-count{font-family:var(--mono); color:var(--ink-soft); text-align:right;}
 
-/* ---------- otras fuentes ---------- */
 .source-card{border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px;}
 .source-card h3{font-size:15px; margin-bottom:4px;}
 .source-card .note{font-size:12px; color:var(--ink-faint); margin:6px 0 10px;}
 .generic-query-box{background:#fff; border:1px dashed var(--line-strong); border-radius:var(--radius); padding:10px 12px; font-family:var(--mono); font-size:12.5px; color:var(--navy-light); word-break:break-word; margin-bottom:10px;}
 
-/* ---------- results ---------- */
 .results-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;}
 .result-card{border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; position:relative;}
 .result-card h3{font-size:15.5px; line-height:1.4;}
@@ -178,7 +174,6 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .badge.excluir{background:var(--red-bg); color:var(--red);}
 .badge.dudoso{background:var(--amber-bg); color:var(--gold);}
 
-/* ---------- rúbrica ---------- */
 .rubric-item{display:flex; gap:8px; align-items:flex-start; font-size:12.5px; padding:7px 0; border-bottom:1px dashed var(--line);}
 .rubric-item:last-child{border-bottom:none;}
 .rubric-mark{font-weight:700; flex-shrink:0; width:16px;}
@@ -188,7 +183,6 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .rubric-tag{font-size:10px; font-family:var(--mono); color:var(--ink-faint); margin-left:6px;}
 #rubricBox{margin-top:10px; background:var(--paper-dim); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px;}
 
-/* ---------- history drawer ---------- */
 .drawer{
   position:fixed; top:0; right:-380px; width:360px; height:100vh; background:#fff; border-left:1px solid var(--line);
   box-shadow:-4px 0 18px rgba(0,0,0,.08); transition:right .25s ease; z-index:60; padding:22px; overflow-y:auto;
@@ -202,7 +196,6 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .overlay{position:fixed; inset:0; background:rgba(16,35,63,.35); z-index:55; display:none;}
 .overlay.show{display:block;}
 
-/* ---------- modal ---------- */
 .modal-backdrop{position:fixed; inset:0; background:rgba(16,35,63,.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;}
 .modal-backdrop.show{display:flex;}
 .modal{background:#fff; border-radius:var(--radius); padding:26px 28px; width:440px; max-width:92vw; border-top:4px solid var(--gold); max-height:90vh; overflow-y:auto;}
@@ -212,7 +205,6 @@ textarea:focus, input:focus, select:focus{border-color:var(--navy);}
 .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
 .small-note{font-size:11.5px; color:var(--ink-faint); margin-top:4px;}
 
-/* ---------- misc ---------- */
 .loader{display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite;}
 .loader.dark{border:2px solid rgba(16,35,63,.25); border-top-color:var(--navy);}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -250,7 +242,7 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
       </div>
 
       <div class="row" style="margin-bottom:14px;">
-        <button class="btn btn-ghost btn-sm" id="btnDemo">▶ Ver ejemplo resuelto (datos reales de PubMed)</button>
+        <button class="btn btn-ghost btn-sm" id="btnDemo">▶ Ver ejemplo resuelto (verificación real en PubMed)</button>
         <button class="btn btn-ghost btn-sm" id="btnImportSession">📂 Importar sesión guardada (.json)</button>
         <input type="file" id="importFileInput" accept="application/json" style="display:none;">
       </div>
@@ -258,11 +250,11 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
       <div class="mode-switch" id="modeSwitch">
         <label class="mode-option">
           <input type="radio" name="workMode" value="ia" id="modeIA">
-          <span><span class="t">Con ayuda de la IA</span><span class="d">La IA propone el marco (PICO/PICOS/PECO/SPIDER) y extrae los elementos por ti. Requiere clave de OpenAI.</span></span>
+          <span><span class="t">Con ayuda de la IA</span><span class="d">La IA propone el marco y una batería de términos por elemento (MeSH y texto libre). Cada término MeSH propuesto se verifica en vivo contra PubMed antes de aceptarlo. Requiere clave de OpenAI.</span></span>
         </label>
         <label class="mode-option">
           <input type="radio" name="workMode" value="manual" id="modeManual">
-          <span><span class="t">Manual, sin IA</span><span class="d">Tú eliges el marco y rellenas cada elemento. Ideal para practicar el razonamiento antes de comparar con la IA. No requiere clave.</span></span>
+          <span><span class="t">Manual, sin IA</span><span class="d">Eliges el marco y añades tú cada término; cada uno se verifica al instante contra PubMed. No requiere clave.</span></span>
         </label>
       </div>
 
@@ -271,9 +263,9 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
       <textarea id="inputQuestion" placeholder="Ej: ¿En pacientes adultos con sepsis grave en urgencias, la administración precoz de noradrenalina antes de completar la reposición de volumen mejora la supervivencia a 28 días frente a la reposición de volumen inicial?"></textarea>
 
       <div id="aiOnlyAnalyze">
-        <p class="hint">La IA decidirá qué marco metodológico se ajusta mejor a tu pregunta y por qué.</p>
+        <p class="hint">La IA decidirá qué marco metodológico se ajusta mejor a tu pregunta y propondrá términos para cada elemento; cada candidato a MeSH se verificará en vivo.</p>
         <div class="row spacer-top">
-          <button class="btn btn-primary" id="btnAnalyze">Analizar pregunta y proponer marco <span id="loadAnalyze"></span></button>
+          <button class="btn btn-primary" id="btnAnalyze">Analizar pregunta y proponer términos <span id="loadAnalyze"></span></button>
         </div>
       </div>
 
@@ -301,13 +293,13 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
     <!-- STEP 2: marco / PICO -->
     <section class="step locked" id="step2">
       <div class="step-head">
-        <div><div class="eyebrow">Paso 2</div><h2>Marco estructurado</h2></div>
+        <div><div class="eyebrow">Paso 2</div><h2>Marco estructurado y términos de búsqueda</h2></div>
       </div>
       <div id="frameworkInfo"></div>
-      <p class="hint">Revisa y edita los elementos extraídos. Puedes ajustar el término principal y los sinónimos (separados por comas) que se usarán como texto libre en PubMed.</p>
+      <p class="hint">Cada elemento tiene una descripción breve y una lista de términos. Añade un término, elige si es <strong>MeSH</strong> (se verifica al instante contra la base de datos MeSH de PubMed) o <strong>texto libre</strong> (tiab, sin verificar). Los términos de un mismo elemento se combinan con OR; los distintos elementos, solo con AND.</p>
       <div class="pico-grid" id="picoGrid"></div>
       <div class="row spacer-top">
-        <button class="btn btn-primary" id="btnVerifyMesh">Verificar términos contra PubMed (MeSH) <span id="loadMesh"></span></button>
+        <button class="btn btn-primary" id="btnContinueStep2">Continuar a los filtros <span id="loadContinue2"></span></button>
       </div>
       <div id="errMesh"></div>
     </section>
@@ -317,7 +309,7 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
       <div class="step-head">
         <div><div class="eyebrow">Paso 3</div><h2>Filtros de calidad de evidencia</h2></div>
       </div>
-      <p class="hint">Selecciona los filtros metodológicos que se traducirán a etiquetas de campo reales de PubMed (Publication Type, MeSH, idioma, fecha). Los elementos PICO siempre se combinan solo con AND; si marcas varios filtros de tipo de estudio, esos se combinan entre sí con OR (es una única categoría) y con AND respecto al resto — la ecuación final no mezcla texto libre ni [All Fields].</p>
+      <p class="hint">Selecciona los filtros metodológicos que se traducirán a etiquetas de campo reales de PubMed (Publication Type, MeSH, idioma, fecha). Los elementos PICO siempre se combinan solo con AND; si marcas varios filtros de tipo de estudio, esos se combinan entre sí con OR (es una única categoría) y con AND respecto al resto — la ecuación final no mezcla texto libre no verificado ni [All Fields].</p>
       <div class="filters-grid" id="filtersGrid"></div>
       <div class="row" style="margin-top:6px;">
         <div style="flex:1; min-width:160px;">
@@ -474,14 +466,12 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
 
 <footer class="foot" id="appFooter">EvidentIA · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia</footer>
 
-<!-- History drawer -->
 <div class="overlay" id="overlay"></div>
 <div class="drawer" id="drawer">
   <h2>Historial de búsquedas</h2>
   <div id="histList"></div>
 </div>
 
-<!-- Settings modal -->
 <div class="modal-backdrop" id="settingsModal">
   <div class="modal">
     <h2>Configuración</h2>
@@ -519,13 +509,14 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
 /* =========================================================
    VERSIÓN
    ========================================================= */
-const APP_VERSION = 'v3.1';
+const APP_VERSION = 'v4.0';
 const APP_BUILD_DATE = '2026-07-24';
 document.getElementById('appFooter').textContent =
   `EvidentIA ${APP_VERSION} (${APP_BUILD_DATE}) · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia`;
 
 /* =========================================================
    ESTADO GLOBAL
+   Cada elemento PICO: {key, label, texto, terms:[{t, tipo:'mesh'|'tiab', verified, count, note}]}
    ========================================================= */
 const state = {
   useAI: true,
@@ -562,10 +553,14 @@ const DEMO_CASE = {
   question: '¿En pacientes adultos con fibrilación auricular no valvular, los anticoagulantes orales de acción directa reducen el riesgo de ictus isquémico en comparación con warfarina?',
   framework: 'PICO',
   elements: [
-    {key:'P', label:'Población / Paciente', value:'nonvalvular atrial fibrillation', gloss_es:'fibrilación auricular no valvular', synonyms:['atrial fibrillation','AF']},
-    {key:'I', label:'Intervención', value:'direct oral anticoagulants', gloss_es:'anticoagulantes orales de acción directa', synonyms:['DOAC','NOAC','apixaban','rivaroxaban','dabigatran']},
-    {key:'C', label:'Comparación', value:'warfarin', gloss_es:'warfarina', synonyms:['vitamin K antagonist']},
-    {key:'O', label:'Resultado (Outcome)', value:'ischemic stroke', gloss_es:'ictus isquémico', synonyms:['stroke prevention']}
+    {key:'P', label:'Población / Paciente', texto:'Pacientes adultos con fibrilación auricular no valvular',
+      proposed:[{t:'Atrial Fibrillation', tipo:'mesh'},{t:'nonvalvular atrial fibrillation', tipo:'tiab'}]},
+    {key:'I', label:'Intervención', texto:'Anticoagulantes orales de acción directa',
+      proposed:[{t:'Direct Oral Anticoagulants', tipo:'mesh'},{t:'DOAC', tipo:'tiab'},{t:'NOAC', tipo:'tiab'}]},
+    {key:'C', label:'Comparación', texto:'Warfarina',
+      proposed:[{t:'Warfarin', tipo:'mesh'},{t:'vitamin K antagonist', tipo:'tiab'}]},
+    {key:'O', label:'Resultado (Outcome)', texto:'Ictus isquémico',
+      proposed:[{t:'Stroke', tipo:'mesh'},{t:'ischemic stroke', tipo:'tiab'}]}
   ]
 };
 
@@ -757,6 +752,25 @@ async function pubmedAbstract(pmid){
 }
 
 /* =========================================================
+   VERIFICACIÓN MeSH — SIEMPRE contra el campo [MeSH Terms],
+   nunca confiando en el mapeo automático de PubMed a All Fields
+   ni en la mera afirmación de la IA.
+   ========================================================= */
+function extractMeshHeadings(translation){
+  const out = []; const re = /"([^"]+)"\[MeSH Terms\]/g; let m;
+  while((m = re.exec(translation)) !== null){ if(!out.includes(m[1])) out.push(m[1]); }
+  return out;
+}
+// Verifica un término candidato a MeSH. Devuelve {ok, headings:[...]}
+async function verifyMeshTerm(rawText){
+  const clean = String(rawText).replace(/"/g,'').trim();
+  if(!clean) return {ok:false, headings:[]};
+  const {translation} = await pubmedTranslate('"'+clean+'"[MeSH Terms]');
+  const headings = extractMeshHeadings(translation);
+  return {ok: headings.length>0, headings};
+}
+
+/* =========================================================
    MODO DE TRABAJO (IA vs MANUAL)
    ========================================================= */
 function setMode(mode){
@@ -773,7 +787,6 @@ function refreshAIAvailabilityUI(){
   document.getElementById('btnScreen').disabled = !avail;
   document.getElementById('btnScreen').title = avail? '' : 'Requiere una clave de OpenAI configurada (⚙ Configuración).';
   document.getElementById('btnAiPolish').style.display = avail? 'inline-flex':'none';
-  // La ecuación base siempre es determinista y precisa; la IA (si hay clave) solo se ofrece para refinarla.
   document.getElementById('refineAIRow').style.display = avail? 'flex':'none';
   document.getElementById('refineManualRow').style.display = avail? 'none':'block';
 }
@@ -781,19 +794,25 @@ function refreshAIAvailabilityUI(){
 /* =========================================================
    PASO 1: ejemplo resuelto e importar sesión
    ========================================================= */
-document.getElementById('btnDemo').addEventListener('click', ()=>{
+document.getElementById('btnDemo').addEventListener('click', async ()=>{
   if(state.dirty && !confirm('Cargar el ejemplo sustituirá tu progreso actual sin guardar. ¿Continuar?')) return;
   document.getElementById('inputQuestion').value = DEMO_CASE.question;
   state.question = DEMO_CASE.question;
   state.framework = DEMO_CASE.framework;
   state.questionType = 'Terapia / tratamiento — caso de ejemplo';
-  state.rationale = 'Caso ilustrativo precargado para que veas el flujo completo. A partir de aquí, todos los datos que obtengas (verificación MeSH, ecuación, resultados) son reales y en vivo desde PubMed: solo la pregunta y el PICO de partida están precargados.';
-  state.elements = DEMO_CASE.elements.map(e=>({...e, synonyms:[...e.synonyms], gloss_es:e.gloss_es||'', meshHeading:'', meshCandidates:[], useOfficial:false, verified:false}));
+  state.rationale = 'Caso ilustrativo precargado para que veas el flujo completo. Los términos "MeSH" propuestos se verifican ahora mismo, en vivo, contra PubMed — igual que si los añadieras tú a mano.';
+  state.elements = DEMO_CASE.elements.map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms:[]}));
   document.getElementById('modeManual').checked = true; setMode('manual');
   state.dirty = false;
   renderFramework(); renderPicoGrid();
   unlockStep(2); setActive(1);
   document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+  // Verificación real en vivo de los términos propuestos del ejemplo
+  for(let i=0;i<DEMO_CASE.elements.length;i++){
+    for(const p of DEMO_CASE.elements[i].proposed){
+      await addProposedTerm(i, p.t, p.tipo);
+    }
+  }
 });
 
 document.getElementById('btnImportSession').addEventListener('click', ()=>{
@@ -816,7 +835,7 @@ document.getElementById('importFileInput').addEventListener('change', e=>{
 });
 
 /* =========================================================
-   PASO 1 (IA): analizar pregunta clínica
+   PASO 1 (IA): analizar pregunta clínica y proponer términos
    ========================================================= */
 document.getElementById('btnAnalyze').addEventListener('click', async ()=>{
   const q = document.getElementById('inputQuestion').value.trim();
@@ -826,36 +845,63 @@ document.getElementById('btnAnalyze').addEventListener('click', async ()=>{
   state.question = q;
   setLoading('loadAnalyze', true);
   try{
-    const sys = `Eres un especialista en medicina basada en la evidencia (metodología tipo Sackett/Straus, Cochrane, JBI).
-Dada una pregunta o escenario clínico en español, tu tarea es:
-1) Clasificar el tipo de pregunta: terapia/intervención, diagnóstico, etiología/daño, pronóstico, prevención, o cualitativa/experiencia.
-2) Elegir el marco estructurado más adecuado:
-   - PICO: terapia, diagnóstico, prevención (Población, Intervención, Comparación, Outcome/resultado).
-   - PICOS: igual que PICO pero cuando conviene fijar de antemano el diseño de estudio (S), típico de protocolos de revisión sistemática.
-   - PECO: etiología, daño, factores de riesgo o exposiciones ambientales/ocupacionales (Población, Exposición, Comparación, Outcome).
-   - SPIDER: preguntas cualitativas o de experiencia/percepción (Sample, Phenomenon of Interest, Design, Evaluation, Research type).
-3) Extraer cada elemento del marco elegido. IMPORTANTE: el campo "value" debe estar EN INGLÉS y ser un término buscable en MEDLINE (nunca en español), porque se usará directamente para consultar la base de datos MeSH de PubMed. Además da un "gloss_es" (una glosa breve en español, solo para que el estudiante entienda el término, que NO se usa en ninguna búsqueda). Incluye también una lista de 3 a 5 sinónimos o términos relacionados, también EN INGLÉS.
-Responde EXCLUSIVAMENTE en JSON con esta forma exacta:
-{"framework":"PICO|PICOS|PECO|SPIDER","question_type":"...","rationale":"explicación breve en español de por qué este marco encaja","elements":[{"key":"P","label":"Población / Paciente","value":"english searchable term","gloss_es":"breve glosa en español","synonyms":["english synonym 1","english synonym 2"]}, ...]}`;
+    const sys = `Eres metodólogo de investigación clínica y documentalista biomédico.
+Dada una pregunta clínica en español:
+1) Clasifica el tipo de pregunta (terapia/intervención, diagnóstico, etiología/daño, pronóstico, prevención, cualitativa/experiencia).
+2) Elige el marco: PICO (terapia/diagnóstico/prevención), PICOS (como PICO, fijando además el diseño de estudio, típico de protocolos de revisión sistemática), PECO (etiología/daño/exposición), o SPIDER (cualitativa).
+3) Para cada elemento del marco, da: "texto" (descripción breve EN ESPAÑOL de ese componente para tu pregunta concreta), "mesh" (2-4 candidatos a encabezamiento MeSH, EN INGLÉS — son SOLO propuestas, se verificarán después contra la base de datos MeSH real, así que no pasa nada si alguno no es exacto), y "libres" (1-3 sinónimos de texto libre EN INGLÉS, para búsqueda en título/resumen).
+Responde EXCLUSIVAMENTE en JSON:
+{"framework":"PICO|PICOS|PECO|SPIDER","question_type":"...","rationale":"explicación breve en español de por qué este marco encaja",
+"elements":[{"key":"P","label":"Población / Paciente","texto":"...","mesh":["...","..."],"libres":["...","..."]}, ...]}`;
     const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: q}]);
     state.framework = out.framework;
     state.questionType = out.question_type;
     state.rationale = out.rationale;
-    state.elements = (out.elements||[]).map(e=>({
-      key:e.key, label:e.label, value:e.value||'', gloss_es:e.gloss_es||'',
-      synonyms: Array.isArray(e.synonyms)? e.synonyms : [],
-      meshHeading:'', meshCandidates:[], useOfficial:false, verified:false
-    }));
+    state.elements = (out.elements||[]).map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms:[]}));
     state.dirty = true;
     renderFramework(); renderPicoGrid();
     unlockStep(2); setActive(1);
     document.getElementById('step2').scrollIntoView({behavior:'smooth'});
-  }catch(e){ errBox.innerHTML = errHtml(e); }
-  setLoading('loadAnalyze', false);
+    setLoading('loadAnalyze', false);
+    // Verificación en vivo de cada candidato MeSH propuesto por la IA; los rechazados
+    // se añaden como texto libre con una nota, nunca se aceptan sin comprobar.
+    const rawElements = out.elements||[];
+    for(let i=0;i<rawElements.length;i++){
+      const mesh = Array.isArray(rawElements[i].mesh)? rawElements[i].mesh : [];
+      const libres = Array.isArray(rawElements[i].libres)? rawElements[i].libres : [];
+      for(const m of mesh){ await addProposedTerm(i, m, 'mesh'); }
+      for(const l of libres){ await addProposedTerm(i, l, 'tiab'); }
+    }
+  }catch(e){ errBox.innerHTML = errHtml(e); setLoading('loadAnalyze', false); }
 });
 
+// Añade un término propuesto (por IA o por el ejemplo) verificando en vivo si tipo=mesh.
+// Si el término MeSH no se reconoce, se añade igualmente como texto libre con una nota visible.
+async function addProposedTerm(idx, rawText, tipo){
+  if(!state.elements[idx]) return;
+  if(tipo === 'tiab'){
+    state.elements[idx].terms.push({t:rawText, tipo:'tiab', verified:false});
+    renderChips(idx); return;
+  }
+  try{
+    const {ok, headings} = await verifyMeshTerm(rawText);
+    if(ok){
+      headings.forEach(h=>{
+        if(!state.elements[idx].terms.some(t=>t.tipo==='mesh' && t.t===h)){
+          state.elements[idx].terms.push({t:h, tipo:'mesh', verified:true});
+        }
+      });
+    } else {
+      state.elements[idx].terms.push({t:rawText, tipo:'tiab', verified:false, note:'Propuesto como MeSH, pero PubMed no lo reconoce como encabezamiento — añadido como texto libre.'});
+    }
+  }catch(e){
+    state.elements[idx].terms.push({t:rawText, tipo:'tiab', verified:false, note:'No se pudo verificar contra PubMed — añadido como texto libre.'});
+  }
+  renderChips(idx);
+}
+
 /* =========================================================
-   PASO 1 (MANUAL): elegir marco y rellenar a mano
+   PASO 1 (MANUAL): elegir marco
    ========================================================= */
 document.getElementById('btnManualConfirm').addEventListener('click', ()=>{
   const q = document.getElementById('inputQuestion').value.trim();
@@ -866,9 +912,7 @@ document.getElementById('btnManualConfirm').addEventListener('click', ()=>{
   state.framework = document.getElementById('manualFrameworkSelect').value;
   state.questionType = '(definido manualmente por el estudiante)';
   state.rationale = 'Marco elegido manualmente por el estudiante, sin asistencia de IA.';
-  state.elements = FRAMEWORK_TEMPLATES[state.framework].map(([k,l])=>({
-    key:k, label:l, value:'', gloss_es:'', synonyms:[], meshHeading:'', meshCandidates:[], useOfficial:false, verified:false
-  }));
+  state.elements = FRAMEWORK_TEMPLATES[state.framework].map(([k,l])=>({key:k, label:l, texto:'', terms:[]}));
   state.dirty = true;
   renderFramework(); renderPicoGrid();
   unlockStep(2); setActive(1);
@@ -884,6 +928,9 @@ function renderFramework(){
   `;
 }
 
+/* =========================================================
+   PASO 2: tarjetas PICO con chips de término (MeSH / texto libre)
+   ========================================================= */
 function renderPicoGrid(){
   const grid = document.getElementById('picoGrid');
   grid.innerHTML = '';
@@ -893,111 +940,87 @@ function renderPicoGrid(){
     card.innerHTML = `
       <div class="k">${escapeHtml(el.key)}</div>
       <div class="l">${escapeHtml(el.label)}</div>
-      <input type="text" data-idx="${idx}" class="pico-value" placeholder="término principal EN INGLÉS (MEDLINE indexa en inglés)" value="${escapeAttr(el.value)}">
-      ${el.gloss_es? `<div class="syn-label" style="font-style:italic;">🇪🇸 ${escapeHtml(el.gloss_es)}</div>` : ''}
-      <div class="syn-label">Sinónimos / términos relacionados (en inglés, separados por comas)</div>
-      <input type="text" data-idx="${idx}" class="pico-syn" placeholder="synonym1, synonym2, synonym3" value="${escapeAttr(el.synonyms.join(', '))}">
-      <div class="mesh-status pending" id="meshStatus${idx}">Sin verificar en PubMed todavía.</div>
-      <div id="meshBox${idx}"></div>
+      <textarea data-idx="${idx}" class="pico-texto" placeholder="Descripción breve en español (opcional)">${escapeHtml(el.texto||'')}</textarea>
+      <div class="chips" id="chips${idx}"></div>
+      <div class="addterm">
+        <input type="text" id="addInput${idx}" placeholder="Añadir término (en inglés)">
+        <select id="addType${idx}">
+          <option value="mesh">MeSH (se verifica)</option>
+          <option value="tiab">Texto libre (tiab)</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="addBtn${idx}">+ Añadir</button>
+      </div>
+      <div class="add-status" id="addStatus${idx}"></div>
+      <a class="chip linklike" style="margin-top:8px;" href="https://www.ncbi.nlm.nih.gov/mesh" target="_blank" rel="noopener">Ver MeSH Database ↗</a>
     `;
     grid.appendChild(card);
   });
-  grid.querySelectorAll('.pico-value').forEach(inp=>inp.addEventListener('input', e=>{
-    state.elements[e.target.dataset.idx].value = e.target.value; state.elements[e.target.dataset.idx].verified = false; state.dirty = true;
+  grid.querySelectorAll('.pico-texto').forEach(t=>t.addEventListener('input', e=>{
+    state.elements[e.target.dataset.idx].texto = e.target.value; state.dirty = true;
   }));
-  grid.querySelectorAll('.pico-syn').forEach(inp=>inp.addEventListener('input', e=>{
-    state.elements[e.target.dataset.idx].synonyms = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); state.dirty = true;
+  state.elements.forEach((el, idx)=>{
+    renderChips(idx);
+    const doAdd = async ()=>{
+      const input = document.getElementById('addInput'+idx);
+      const type = document.getElementById('addType'+idx).value;
+      const statusEl = document.getElementById('addStatus'+idx);
+      const val = input.value.trim();
+      if(!val) return;
+      statusEl.className = 'add-status'; statusEl.textContent = '';
+      if(type === 'tiab'){
+        state.elements[idx].terms.push({t:val, tipo:'tiab', verified:false});
+        input.value=''; state.dirty = true; renderChips(idx); return;
+      }
+      statusEl.textContent = 'Verificando contra PubMed…';
+      try{
+        const {ok, headings} = await verifyMeshTerm(val);
+        if(ok){
+          headings.forEach(h=>{
+            if(!state.elements[idx].terms.some(t=>t.tipo==='mesh' && t.t===h)){
+              state.elements[idx].terms.push({t:h, tipo:'mesh', verified:true});
+            }
+          });
+          statusEl.className='add-status ok'; statusEl.textContent = '✓ Añadido: '+headings.join(', ');
+          input.value=''; state.dirty = true; renderChips(idx);
+        } else {
+          statusEl.className='add-status err';
+          statusEl.textContent = '✗ PubMed no reconoce "'+val+'" como encabezamiento MeSH. Prueba otro término, o añádelo como texto libre.';
+        }
+      }catch(e){
+        statusEl.className='add-status err'; statusEl.textContent = 'Error al consultar PubMed: '+e.message;
+      }
+    };
+    document.getElementById('addBtn'+idx).addEventListener('click', doAdd);
+    document.getElementById('addInput'+idx).addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doAdd(); } });
+  });
+}
+
+function renderChips(idx){
+  const box = document.getElementById('chips'+idx);
+  if(!box) return;
+  const el = state.elements[idx];
+  box.innerHTML = el.terms.map((term, i)=>`
+    <span class="chip ${term.tipo}" ${term.note? `title="${escapeAttr(term.note)}"`:''}>
+      ${term.tipo==='mesh'? '✓ ':''}${escapeHtml(term.t)}<span class="x" data-idx="${idx}" data-i="${i}">×</span>
+    </span>
+  `).join('') || '<span class="hint" style="margin:0;">Sin términos todavía.</span>';
+  box.querySelectorAll('.x').forEach(x=>x.addEventListener('click', e=>{
+    const i = e.target.dataset.idx, j = e.target.dataset.i;
+    state.elements[i].terms.splice(j,1); state.dirty = true; renderChips(i);
   }));
 }
 
-/* =========================================================
-   PASO 2: verificar términos MeSH reales vía PubMed
-   ========================================================= */
-// Extrae los encabezamientos MeSH candidatos de una querytranslation ya restringida al campo [MeSH Terms]
-function extractMeshHeadings(translation){
-  const out = []; const re = /"([^"]+)"\[MeSH Terms\]/g; let m;
-  while((m = re.exec(translation)) !== null){ if(!out.includes(m[1])) out.push(m[1]); }
-  return out;
-}
-function renderMeshBox(idx){
-  const el = state.elements[idx];
-  const boxEl = document.getElementById('meshBox'+idx);
-  const meshLink = 'https://www.ncbi.nlm.nih.gov/mesh/?term=' + encodeURIComponent(el.value);
-  if(el.meshCandidates.length===0){
-    boxEl.innerHTML = `
-      <div class="mesh-box">✗ PubMed no reconoce "${escapeHtml(el.value)}" como encabezamiento MeSH.</div>
-      <div class="chip-row">
-        <a class="chip" href="${meshLink}" target="_blank" rel="noopener">Buscar en MeSH Database ↗</a>
-        <span class="chip ${!el.useOfficial?'selected':''}" data-idx="${idx}" data-mode="manual">Usar como texto libre (no cumple el requisito de MeSH puro de la rúbrica)</span>
-      </div>`;
-  } else {
-    boxEl.innerHTML = `
-      <div class="syn-label">Encabezamiento(s) MeSH reconocido(s) por PubMed — elige exactamente uno:</div>
-      <div class="chip-row">
-        ${el.meshCandidates.map(h=>`<span class="chip ${el.useOfficial && el.meshHeading===h?'selected':''}" data-idx="${idx}" data-mode="official" data-heading="${escapeAttr(h)}">${escapeHtml(h)}</span>`).join('')}
-        <span class="chip ${!el.useOfficial?'selected':''}" data-idx="${idx}" data-mode="manual">Usar mis sinónimos como texto libre (no recomendado)</span>
-      </div>
-      <div class="mesh-box" id="meshCount${idx}">${el.useOfficial? '"'+escapeHtml(el.meshHeading)+'"[Mesh]' : '(no seleccionado)'}</div>
-      <a class="chip" style="margin-top:6px;" href="${meshLink}" target="_blank" rel="noopener">Ver en MeSH Database ↗</a>`;
-  }
-  boxEl.querySelectorAll('.chip[data-mode]').forEach(chip=>{
-    chip.addEventListener('click', async e=>{
-      const c = e.target.closest('.chip');
-      const i = c.dataset.idx;
-      if(c.dataset.mode === 'official'){
-        state.elements[i].useOfficial = true;
-        state.elements[i].meshHeading = c.dataset.heading;
-      } else {
-        state.elements[i].useOfficial = false;
-      }
-      state.dirty = true;
-      renderMeshBox(i);
-      if(state.elements[i].useOfficial){
-        const countBox = document.getElementById('meshCount'+i);
-        if(countBox) countBox.textContent = 'Consultando recuento…';
-        try{
-          const {count} = await pubmedTranslate('"'+state.elements[i].meshHeading+'"[Mesh]');
-          const cb = document.getElementById('meshCount'+i);
-          if(cb) cb.textContent = '"'+state.elements[i].meshHeading+'"[Mesh]  ·  '+count.toLocaleString('es-ES')+' registros en PubMed';
-        }catch(err){ /* silencioso, no crítico */ }
-      }
-    });
-  });
-}
-document.getElementById('btnVerifyMesh').addEventListener('click', async ()=>{
+document.getElementById('btnContinueStep2').addEventListener('click', ()=>{
   const errBox = document.getElementById('errMesh');
-  errBox.innerHTML='';
-  const missing = state.elements.filter(el=>!el.value.trim());
-  if(missing.length){ errBox.innerHTML = '<div class="err">Rellena el término principal de todos los elementos antes de verificar.</div>'; return; }
-  setLoading('loadMesh', true);
-  try{
-    for(let i=0;i<state.elements.length;i++){
-      const el = state.elements[i];
-      document.getElementById('meshStatus'+i).textContent = 'Consultando la base de datos MeSH…';
-      // Búsqueda restringida al campo [MeSH Terms]: sin mapeo automático a All Fields, sin texto libre.
-      const {translation, count} = await pubmedTranslate('"'+el.value.replace(/"/g,'')+'"[MeSH Terms]');
-      el.meshCandidates = extractMeshHeadings(translation);
-      el.verified = true;
-      if(el.meshCandidates.length){
-        el.useOfficial = true; el.meshHeading = el.meshCandidates[0];
-      } else {
-        el.useOfficial = false; el.meshHeading = '';
-      }
-      const statusEl = document.getElementById('meshStatus'+i);
-      if(el.meshCandidates.length){
-        statusEl.className = 'mesh-status ok';
-        statusEl.textContent = '✓ PubMed reconoce '+el.meshCandidates.length+' encabezamiento(s) MeSH para este término ('+count.toLocaleString('es-ES')+' registros combinados).';
-      } else {
-        statusEl.className = 'mesh-status'; statusEl.style.color = 'var(--red)';
-        statusEl.textContent = '✗ No se reconoce como encabezamiento MeSH.';
-      }
-      renderMeshBox(i);
-    }
-    renderFilters();
-    unlockStep(3); setActive(2);
-    document.getElementById('step3').scrollIntoView({behavior:'smooth'});
-  }catch(e){ errBox.innerHTML = errHtml(e); }
-  setLoading('loadMesh', false);
+  errBox.innerHTML = '';
+  const empty = state.elements.filter(el=>el.terms.length===0);
+  if(empty.length){
+    errBox.innerHTML = '<div class="err">Añade al menos un término a cada elemento antes de continuar ('+empty.map(e=>e.key).join(', ')+').</div>';
+    return;
+  }
+  renderFilters();
+  unlockStep(3); setActive(2);
+  document.getElementById('step3').scrollIntoView({behavior:'smooth'});
 });
 
 function renderFilters(){
@@ -1012,7 +1035,7 @@ function renderFilters(){
 }
 
 /* =========================================================
-   PASO 3: construir ecuación (con IA o determinista)
+   PASO 3: construir ecuación (siempre determinista y precisa)
    ========================================================= */
 function readFiltersFromUI(){
   const activeFilters = FILTER_DEFS.filter(f=>document.getElementById('filter_'+f.id) && document.getElementById('filter_'+f.id).checked);
@@ -1023,16 +1046,25 @@ function readFiltersFromUI(){
   return activeFilters;
 }
 
+function fmtTerm(term){
+  const t = String(term.t).replace(/"/g,'');
+  return term.tipo === 'mesh' ? '"'+t+'"[Mesh]' : '"'+t+'"[tiab]';
+}
+function blockQuery(el){
+  if(!el.terms.length) return null;
+  return '(' + el.terms.map(fmtTerm).join(' OR ') + ')';
+}
+
 // La IA nunca inventa la sintaxis MeSH: solo reescribe/ajusta la ecuación determinista ya construida,
 // a partir de una instrucción del estudiante (p.ej. "añade filtro pediátrico").
 async function buildEquationAI(instruction){
   if(!state.equation){ buildEquationDeterministic(); }
   const sys = `Eres un documentalista clínico experto en sintaxis de búsqueda de PubMed/MEDLINE.
-Recibirás una ecuación de búsqueda YA CONSTRUIDA de forma precisa (términos MeSH verificados con [Mesh], combinados solo con AND, más algún filtro).
+Recibirás una ecuación de búsqueda YA CONSTRUIDA de forma precisa (términos MeSH verificados con [Mesh] y/o texto libre con [tiab], combinados con OR dentro de cada concepto y AND entre conceptos, más algún filtro).
 Tu única tarea es aplicar el ajuste que pide el estudiante, respetando estas reglas estrictas:
-- NO elimines ni reescribas los términos [Mesh] ya presentes salvo que el estudiante lo pida explícitamente.
-- NO añadas [All Fields] ni conviertas términos MeSH en texto libre.
-- Usa AND entre los distintos conceptos (población/intervención/comparación/resultado); usa OR solo dentro de un mismo filtro de tipo de publicación si se combinan varios, nunca entre conceptos distintos.
+- NO elimines ni reescribas los términos [Mesh]/[tiab] ya presentes salvo que el estudiante lo pida explícitamente.
+- NO añadas [All Fields] ni sustituyas términos MeSH por texto libre.
+- Usa AND entre los distintos conceptos (población/intervención/comparación/resultado); usa OR solo dentro de un mismo concepto o de un mismo filtro de tipo de publicación.
 - Si el estudiante pide añadir un filtro o límite, exprésalo con la etiqueta de campo real de PubMed correspondiente (p.ej. "Child"[Mesh], "Aged"[Mesh], english[la]).
 Responde EXCLUSIVAMENTE en JSON: {"equation":"...", "explanation":"explicación breve en español del cambio aplicado"}`;
   const userPayload = { ecuacion_actual: state.equation, instruccion_del_estudiante: instruction };
@@ -1045,18 +1077,16 @@ function buildEquationDeterministic(){
   const activeFilters = readFiltersFromUI();
   let anyFreeText = false;
   const blocks = state.elements.map(el=>{
-    if(el.useOfficial && el.meshHeading){ return '"'+el.meshHeading.replace(/"/g,'')+'"[Mesh]'; }
-    anyFreeText = true;
-    const terms = [el.value, ...el.synonyms].filter(Boolean).map(t=>'"'+String(t).replace(/"/g,'')+'"[tiab]');
-    return terms.length? '('+terms.join(' OR ')+')' : null;
+    if(el.terms.some(t=>t.tipo==='tiab')) anyFreeText = true;
+    return blockQuery(el);
   }).filter(Boolean);
   let eq = blocks.join(' AND ');
   if(activeFilters.length===1){ eq += ' AND ' + activeFilters[0].tag; }
   else if(activeFilters.length>1){ eq += ' AND (' + activeFilters.map(f=>f.tag).join(' OR ') + ')'; }
   state.equation = eq;
   state.equationExplain = anyFreeText
-    ? 'Aviso: al menos un elemento usa texto libre ([tiab], con OR de sinónimos) porque no tiene un encabezamiento MeSH verificado seleccionado — esto no cumple el requisito de "solo MeSH" de la rúbrica. Vuelve al Paso 2 y elige un encabezamiento MeSH para ese elemento si es posible.'
-    : 'Ecuación construida con un único encabezamiento MeSH verificado por elemento ("Término"[Mesh]), combinados solo con AND. Los filtros de tipo de publicación seleccionados (si hay varios) se combinan entre sí con OR y con el resto mediante AND.';
+    ? 'Aviso: al menos un elemento incluye términos de texto libre ([tiab]) sin verificar como MeSH. Repásalos en el Paso 2 si quieres una ecuación 100% MeSH.'
+    : 'Ecuación construida solo con encabezamientos MeSH verificados por PubMed. Dentro de cada elemento, los términos se combinan con OR (sinónimos MeSH); entre elementos, solo con AND.';
   renderEquation();
 }
 
@@ -1125,8 +1155,7 @@ document.getElementById('btnFunnel').addEventListener('click', async ()=>{
   }catch(e){ bars.innerHTML = errHtml(e); }
 });
 function extractParenBlocks(eq){
-  // Divide la ecuación por los "AND" de nivel superior (respetando paréntesis), no por paréntesis:
-  // los bloques MeSH ya no llevan paréntesis envolventes ("Término"[Mesh]).
+  // Divide la ecuación por los "AND" de nivel superior (respetando paréntesis).
   const parts = []; let depth = 0, start = 0;
   for(let i=0;i<eq.length;i++){
     const ch = eq[i];
@@ -1147,7 +1176,7 @@ function extractParenBlocks(eq){
    ========================================================= */
 function genericBooleanQuery(){
   const blocks = state.elements.map(el=>{
-    const terms = [el.value, ...el.synonyms].filter(Boolean).map(t=>'"'+String(t).replace(/"/g,'')+'"');
+    const terms = el.terms.map(t=>'"'+String(t.t).replace(/"/g,'')+'"');
     return terms.length? '('+terms.join(' OR ')+')' : null;
   }).filter(Boolean);
   return blocks.join(' AND ');
@@ -1246,7 +1275,7 @@ document.getElementById('btnScreen').addEventListener('click', async ()=>{
       if(!r.abstract){ try{ r.abstract = (await pubmedAbstract(r.pmid)).trim(); }catch(e){ r.abstract=''; } }
       withAbs.push({pmid:r.pmid, title:r.title, abstract:(r.abstract||'').slice(0,1200)});
     }
-    const criteria = state.elements.map(e=>`${e.label}: ${e.value}`).join(' | ');
+    const criteria = state.elements.map(e=>`${e.label}: ${e.texto || e.terms.map(t=>t.t).join(', ')}`).join(' | ');
     const sys = `Eres un revisor metodológico realizando el cribado de título/resumen de una búsqueda bibliográfica, según los criterios proporcionados.
 Para cada artículo, decide: "Incluir", "Excluir", o "Dudoso". Da una razón muy breve (máx 12 palabras, en español) por artículo.
 Responde EXCLUSIVAMENTE en JSON: {"decisions":[{"pmid":"...","decision":"Incluir|Excluir|Dudoso","reason":"..."}]}`;
@@ -1272,7 +1301,7 @@ function generateMethodTemplate(){
   if(state.otherSources.cochrane) otherNotes.push('Cochrane Library');
   if(state.otherSources.multi) otherNotes.push('bases de datos internacionales multidisciplinares (p.ej. Scopus, Web of Science, Embase)');
   const extra = otherNotes.length? ` Adicionalmente, se consultaron: ${otherNotes.join(' y ')}.` : '';
-  const elementsTxt = state.elements.map(e=>e.key+' = '+(e.value||'—')).join('; ');
+  const elementsTxt = state.elements.map(e=>e.key+' = '+(e.texto || e.terms.map(t=>t.t).join('; ') || '—')).join('; ');
   const restr = [];
   if(state.years>0) restr.push('se restringió la búsqueda a los últimos '+state.years+' años');
   if(state.lang) restr.push('se limitó el idioma a '+(state.lang==='english'?'inglés':'español'));
@@ -1306,8 +1335,8 @@ Responde EXCLUSIVAMENTE en JSON: {"paragraph":"..."}`;
 function computeRubricChecklist(){
   const q = state.question || '';
   const hasQuestionMark = /\?|¿/.test(q);
-  const elementsComplete = state.elements.length>0 && state.elements.every(e=>e.value && e.value.trim());
-  const usedMesh = state.elements.some(e=>e.useOfficial && e.meshHeading);
+  const elementsComplete = state.elements.length>0 && state.elements.every(e=>e.terms.length>0);
+  const usedMesh = state.elements.some(e=>e.terms.some(t=>t.tipo==='mesh' && t.verified));
   const booleanOk = /\bAND\b|\bOR\b|\bNOT\b/.test(state.equation||'');
   const filtersOk = (state.activeFilterLabels && state.activeFilterLabels.length>0) || state.years!==10 || !!state.lang;
   const finalAnswerTxt = (document.getElementById('finalAnswer').value||'').trim();
@@ -1315,7 +1344,7 @@ function computeRubricChecklist(){
 
   return [
     {ok: hasQuestionMark, req:true, label:'A) La pregunta consta explícitamente en forma gramatical de interrogación'},
-    {ok: elementsComplete, req:true, label:'A) Se indican todos los componentes del marco '+(state.framework||'PICO')},
+    {ok: elementsComplete, req:true, label:'A) Se indican términos para todos los componentes del marco '+(state.framework||'PICO')},
     {ok: !!justificationTxt, req:true, label:'B) Se justifica la selección de las fuentes de información (Paso 5)'},
     {ok: state.searched, req:true, label:'B) Se ha utilizado MEDLINE (PubMed) para al menos una búsqueda'},
     {ok: usedMesh, req:true, label:'B) La búsqueda en MEDLINE incluye Medical Subject Headings (MeSH) verificados'},
@@ -1380,9 +1409,11 @@ document.getElementById('btnExportDocx').addEventListener('click', async ()=>{
     children.push(new Paragraph({text:'Marco metodológico: '+state.framework+' ('+state.questionType+')'}));
     children.push(new Paragraph({text:state.rationale}));
     state.elements.forEach(el=>{
-      children.push(new Paragraph({children:[new TextRun({text:el.key+' — '+el.label+': ', bold:true}), new TextRun(el.value)]}));
-      children.push(new Paragraph({text:'Sinónimos: '+el.synonyms.join(', ')}));
-      children.push(new Paragraph({text:'Encabezamiento MeSH: '+(el.useOfficial && el.meshHeading? '"'+el.meshHeading+'"[Mesh]' : '— (texto libre, no MeSH)')}));
+      children.push(new Paragraph({children:[new TextRun({text:el.key+' — '+el.label+': ', bold:true}), new TextRun(el.texto||'—')]}));
+      const meshTerms = el.terms.filter(t=>t.tipo==='mesh').map(t=>t.t);
+      const tiabTerms = el.terms.filter(t=>t.tipo==='tiab').map(t=>t.t);
+      children.push(new Paragraph({text:'Términos MeSH verificados: '+(meshTerms.join(', ')||'—')}));
+      if(tiabTerms.length) children.push(new Paragraph({text:'Términos de texto libre (tiab): '+tiabTerms.join(', ')}));
     });
     children.push(new Paragraph({text:'B) Fuentes de información', heading:HeadingLevel.HEADING_1}));
     const srcTxt = [state.otherSources.cochrane?'Cochrane Library':null, state.otherSources.multi?'Bases multidisciplinares (Scopus/WoS/Embase)':null].filter(Boolean);
@@ -1430,6 +1461,11 @@ document.getElementById('btnExportPdf').addEventListener('click', ()=>{
     if(state.student.name) line('Estudiante: '+state.student.name+' — '+state.student.group, 9, 8);
     line('A) Pregunta clínica', 12, 7, true); line(state.question);
     line('Marco: '+state.framework+' ('+state.questionType+')', 12, 7, true); line(state.rationale);
+    state.elements.forEach(el=>{
+      const meshTerms = el.terms.filter(t=>t.tipo==='mesh').map(t=>t.t).join(', ');
+      const tiabTerms = el.terms.filter(t=>t.tipo==='tiab').map(t=>t.t).join(', ');
+      line(el.key+' ('+el.label+'): MeSH='+(meshTerms||'—')+(tiabTerms? '  |  tiab='+tiabTerms:''), 9, 5);
+    });
     line('B) Fuentes', 12, 7, true);
     line('Justificación: '+(state.otherSources.justification||'—'), 9, 5);
     line('C) Ecuación de búsqueda (MEDLINE/PubMed)', 12, 7, true); line(state.equation, 9, 5);
@@ -1499,7 +1535,8 @@ async function renderHistory(){
 }
 function loadSession(it){
   state.question = it.question || ''; state.framework = it.framework; state.questionType = it.questionType || '';
-  state.rationale = it.rationale || ''; state.elements = it.elements || [];
+  state.rationale = it.rationale || '';
+  state.elements = (it.elements || []).map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms: e.terms||[]}));
   state.equation = it.equation || ''; state.equationExplain = it.equationExplain || '';
   state.activeFilterLabels = it.activeFilterLabels || [];
   state.years = (it.years!==undefined)? it.years : 10; state.lang = it.lang || ''; state.retmax = it.retmax || 50;
