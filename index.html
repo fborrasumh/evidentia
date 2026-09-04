@@ -512,7 +512,7 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
 /* =========================================================
    VERSIÓN
    ========================================================= */
-const APP_VERSION = 'v5.0';
+const APP_VERSION = 'v5.1';
 const APP_BUILD_DATE = '2026-07-25';
 document.getElementById('appFooter').textContent =
   `EvidentIA ${APP_VERSION} (${APP_BUILD_DATE}) · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia`;
@@ -654,7 +654,9 @@ async function callOpenAI(messages){
     err.friendlyMessage = 'Falta la clave API de OpenAI. Ábrela en Configuración (⚙), o cambia al modo manual en el Paso 1.';
     throw err;
   }
-  const body = { model, messages, response_format:{type:'json_object'}, temperature:0.2 };
+  // Algunos modelos (o-series, gpt-5.6) solo admiten temperature=1 (el valor por defecto) y
+  // devuelven error 400 si se envía cualquier otro valor. Por eso no la fijamos explícitamente.
+  const body = { model, messages, response_format:{type:'json_object'} };
   let res;
   try{
     res = await fetch('https://api.openai.com/v1/chat/completions', {
