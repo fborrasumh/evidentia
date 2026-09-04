@@ -296,7 +296,7 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
         <div><div class="eyebrow">Paso 2</div><h2>Marco estructurado y términos de búsqueda</h2></div>
       </div>
       <div id="frameworkInfo"></div>
-      <p class="hint">Cada elemento tiene una descripción breve y una lista de términos. Añade un término, elige si es <strong>MeSH</strong> (se verifica al instante contra la base de datos MeSH de PubMed) o <strong>texto libre</strong> (tiab, sin verificar). Los términos de un mismo elemento se combinan con OR; los distintos elementos, solo con AND.</p>
+      <p class="hint">Cada elemento tiene una descripción breve y una lista de términos. Añade un término, elige si es <strong>MeSH</strong> (se verifica al instante contra la base de datos MeSH de PubMed) o <strong>texto libre</strong> (tiab, sin verificar). Los términos de un mismo elemento se combinan con OR; los distintos elementos, solo con AND. Si PubMed interpreta tu término como un encabezamiento distinto al que escribiste (ocurre, por ejemplo, con "effectiveness" → "Treatment Outcome"), no se añade automáticamente: te muestra su definición oficial para que decidas si es realmente lo que quieres decir. Si no se te ocurre el término en inglés, usa "🌐 Traducir con IA" o el enlace a DeCS.</p>
       <div class="pico-grid" id="picoGrid"></div>
       <div class="row spacer-top">
         <button class="btn btn-primary" id="btnContinueStep2">Continuar a los filtros <span id="loadContinue2"></span></button>
@@ -483,11 +483,14 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
     <div class="field">
       <label class="field-label">Modelo</label>
       <select id="cfgModel">
-        <option value="gpt-4o-mini">gpt-4o-mini (rápido y económico, por defecto)</option>
-        <option value="gpt-4o">gpt-4o</option>
-        <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-        <option value="gpt-4.1">gpt-4.1</option>
-        <option value="o4-mini">o4-mini (razonamiento)</option>
+        <option value="gpt-5.6-terra">gpt-5.6-terra (recomendado: equilibrado)</option>
+        <option value="gpt-5.6-luna">gpt-5.6-luna (rápido y económico)</option>
+        <option value="gpt-5.6-sol">gpt-5.6-sol (máxima precisión / razonamiento)</option>
+        <option value="gpt-4o-mini">gpt-4o-mini (heredado)</option>
+        <option value="gpt-4o">gpt-4o (heredado)</option>
+        <option value="gpt-4.1-mini">gpt-4.1-mini (heredado)</option>
+        <option value="gpt-4.1">gpt-4.1 (heredado)</option>
+        <option value="o4-mini">o4-mini (heredado, razonamiento)</option>
       </select>
     </div>
     <div class="field">
@@ -509,8 +512,8 @@ footer.foot{text-align:center; padding:30px; font-size:12px; color:var(--ink-fai
 /* =========================================================
    VERSIÓN
    ========================================================= */
-const APP_VERSION = 'v4.0';
-const APP_BUILD_DATE = '2026-07-24';
+const APP_VERSION = 'v5.0';
+const APP_BUILD_DATE = '2026-07-25';
 document.getElementById('appFooter').textContent =
   `EvidentIA ${APP_VERSION} (${APP_BUILD_DATE}) · herramienta docente de apoyo a la búsqueda bibliográfica basada en evidencia · fborrasumh.github.io/ia`;
 
@@ -567,7 +570,7 @@ const DEMO_CASE = {
 function cfg(){
   return {
     apiKey: localStorage.getItem('ia_openai_key') || '',
-    model: localStorage.getItem('ia_openai_model') || 'gpt-4o-mini',
+    model: localStorage.getItem('ia_openai_model') || 'gpt-5.6-terra',
     ncbiKey: localStorage.getItem('ia_ncbi_key') || '',
     email: localStorage.getItem('ia_ncbi_email') || ''
   };
@@ -755,19 +758,56 @@ async function pubmedAbstract(pmid){
    VERIFICACIÓN MeSH — SIEMPRE contra el campo [MeSH Terms],
    nunca confiando en el mapeo automático de PubMed a All Fields
    ni en la mera afirmación de la IA.
+
+   CLAVE: PubMed puede "traducir" tu palabra a un encabezamiento MeSH
+   distinto (vía sus términos de entrada/sinónimos del tesauro) — p.ej.
+   "effectiveness" -> "Treatment Outcome". Eso SIGUE siendo un MeSH real,
+   pero no es necesariamente lo que querías decir ("tiene truco", como
+   dice el profesor). Por eso distinguimos:
+     - coincidencia EXACTA (lo que escribiste == el encabezamiento) -> alta confianza
+     - coincidencia MAPEADA (PubMed lo interpretó como otra cosa) -> exige revisar
+       la nota de alcance (definición oficial de la NLM) antes de aceptarlo.
    ========================================================= */
 function extractMeshHeadings(translation){
   const out = []; const re = /"([^"]+)"\[MeSH Terms\]/g; let m;
   while((m = re.exec(translation)) !== null){ if(!out.includes(m[1])) out.push(m[1]); }
   return out;
 }
-// Verifica un término candidato a MeSH. Devuelve {ok, headings:[...]}
+// Verifica un término candidato a MeSH. Devuelve {ok, headings:[{heading, exact}]}
 async function verifyMeshTerm(rawText){
   const clean = String(rawText).replace(/"/g,'').trim();
   if(!clean) return {ok:false, headings:[]};
   const {translation} = await pubmedTranslate('"'+clean+'"[MeSH Terms]');
-  const headings = extractMeshHeadings(translation);
+  const raw = extractMeshHeadings(translation);
+  const lc = clean.toLowerCase();
+  const headings = raw.map(h=>({heading:h, exact: h.toLowerCase()===lc}));
   return {ok: headings.length>0, headings};
+}
+// Recupera la nota de alcance (definición oficial de la NLM) de un encabezamiento MeSH exacto.
+async function getMeshScopeNote(heading){
+  try{
+    await throttle();
+    const p1 = eutilsParams({db:'mesh', term:'"'+heading.replace(/"/g,'')+'"'});
+    const r1 = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?'+p1.toString());
+    if(!r1.ok) return '';
+    const j1 = await r1.json();
+    const uid = (j1.esearchresult.idlist||[])[0];
+    if(!uid) return '';
+    await throttle();
+    const p2 = eutilsParams({db:'mesh', id:uid, version:'2.0'});
+    const r2 = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?'+p2.toString());
+    if(!r2.ok) return '';
+    const j2 = await r2.json();
+    const rec = j2.result && j2.result[uid];
+    return (rec && rec.ds_scopenote) ? rec.ds_scopenote : '';
+  }catch(e){ return ''; }
+}
+// Traduce un término al inglés con IA (solo como ayuda para escribir el término a verificar;
+// el resultado sigue pasando por la verificación real contra PubMed, nunca se acepta sin más).
+async function translateToEnglish(text){
+  const sys = 'Traduce este término clínico del español al inglés. Devuelve solo el término más adecuado para buscarlo como posible encabezamiento MeSH en PubMed, sin explicaciones ni comillas. Responde EXCLUSIVAMENTE en JSON: {"en":"..."}';
+  const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: text}]);
+  return out.en || '';
 }
 
 /* =========================================================
@@ -801,7 +841,7 @@ document.getElementById('btnDemo').addEventListener('click', async ()=>{
   state.framework = DEMO_CASE.framework;
   state.questionType = 'Terapia / tratamiento — caso de ejemplo';
   state.rationale = 'Caso ilustrativo precargado para que veas el flujo completo. Los términos "MeSH" propuestos se verifican ahora mismo, en vivo, contra PubMed — igual que si los añadieras tú a mano.';
-  state.elements = DEMO_CASE.elements.map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms:[]}));
+  state.elements = DEMO_CASE.elements.map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms:[], pending:[]}));
   document.getElementById('modeManual').checked = true; setMode('manual');
   state.dirty = false;
   renderFramework(); renderPicoGrid();
@@ -849,7 +889,7 @@ document.getElementById('btnAnalyze').addEventListener('click', async ()=>{
 Dada una pregunta clínica en español:
 1) Clasifica el tipo de pregunta (terapia/intervención, diagnóstico, etiología/daño, pronóstico, prevención, cualitativa/experiencia).
 2) Elige el marco: PICO (terapia/diagnóstico/prevención), PICOS (como PICO, fijando además el diseño de estudio, típico de protocolos de revisión sistemática), PECO (etiología/daño/exposición), o SPIDER (cualitativa).
-3) Para cada elemento del marco, da: "texto" (descripción breve EN ESPAÑOL de ese componente para tu pregunta concreta), "mesh" (2-4 candidatos a encabezamiento MeSH, EN INGLÉS — son SOLO propuestas, se verificarán después contra la base de datos MeSH real, así que no pasa nada si alguno no es exacto), y "libres" (1-3 sinónimos de texto libre EN INGLÉS, para búsqueda en título/resumen).
+3) Para cada elemento del marco, da: "texto" (descripción breve EN ESPAÑOL de ese componente para tu pregunta concreta), "mesh" (1-3 candidatos a encabezamiento MeSH, EN INGLÉS — son SOLO propuestas, se verificarán después contra la base de datos MeSH real, así que no pasa nada si alguno no es exacto), y "libres" (1-3 sinónimos de texto libre EN INGLÉS, para búsqueda en título/resumen). Para conceptos abstractos sin MeSH propio y directo (p.ej. "efectividad", "eficacia"), NO fuerces un candidato MeSH dudoso: propón menos candidatos MeSH pero más precisos, y cubre el resto con "libres".
 Responde EXCLUSIVAMENTE en JSON:
 {"framework":"PICO|PICOS|PECO|SPIDER","question_type":"...","rationale":"explicación breve en español de por qué este marco encaja",
 "elements":[{"key":"P","label":"Población / Paciente","texto":"...","mesh":["...","..."],"libres":["...","..."]}, ...]}`;
@@ -857,7 +897,7 @@ Responde EXCLUSIVAMENTE en JSON:
     state.framework = out.framework;
     state.questionType = out.question_type;
     state.rationale = out.rationale;
-    state.elements = (out.elements||[]).map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms:[]}));
+    state.elements = (out.elements||[]).map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms:[], pending:[]}));
     state.dirty = true;
     renderFramework(); renderPicoGrid();
     unlockStep(2); setActive(1);
@@ -886,11 +926,22 @@ async function addProposedTerm(idx, rawText, tipo){
   try{
     const {ok, headings} = await verifyMeshTerm(rawText);
     if(ok){
-      headings.forEach(h=>{
-        if(!state.elements[idx].terms.some(t=>t.tipo==='mesh' && t.t===h)){
-          state.elements[idx].terms.push({t:h, tipo:'mesh', verified:true});
+      for(const h of headings){
+        if(h.exact){
+          if(!state.elements[idx].terms.some(t=>t.tipo==='mesh' && t.t===h.heading)){
+            state.elements[idx].terms.push({t:h.heading, tipo:'mesh', verified:true, exact:true});
+          }
+        } else {
+          if(!state.elements[idx].pending.some(p=>p.heading===h.heading)){
+            state.elements[idx].pending.push({heading:h.heading, from:rawText, scopeNote:'(cargando definición…)'});
+            renderChips(idx);
+            getMeshScopeNote(h.heading).then(note=>{
+              const p = state.elements[idx].pending.find(x=>x.heading===h.heading);
+              if(p){ p.scopeNote = note || '(la base de datos MeSH no devolvió una definición para este encabezamiento)'; renderChips(idx); }
+            });
+          }
         }
-      });
+      }
     } else {
       state.elements[idx].terms.push({t:rawText, tipo:'tiab', verified:false, note:'Propuesto como MeSH, pero PubMed no lo reconoce como encabezamiento — añadido como texto libre.'});
     }
@@ -912,7 +963,7 @@ document.getElementById('btnManualConfirm').addEventListener('click', ()=>{
   state.framework = document.getElementById('manualFrameworkSelect').value;
   state.questionType = '(definido manualmente por el estudiante)';
   state.rationale = 'Marco elegido manualmente por el estudiante, sin asistencia de IA.';
-  state.elements = FRAMEWORK_TEMPLATES[state.framework].map(([k,l])=>({key:k, label:l, texto:'', terms:[]}));
+  state.elements = FRAMEWORK_TEMPLATES[state.framework].map(([k,l])=>({key:k, label:l, texto:'', terms:[], pending:[]}));
   state.dirty = true;
   renderFramework(); renderPicoGrid();
   unlockStep(2); setActive(1);
@@ -942,6 +993,7 @@ function renderPicoGrid(){
       <div class="l">${escapeHtml(el.label)}</div>
       <textarea data-idx="${idx}" class="pico-texto" placeholder="Descripción breve en español (opcional)">${escapeHtml(el.texto||'')}</textarea>
       <div class="chips" id="chips${idx}"></div>
+      <div id="pending${idx}"></div>
       <div class="addterm">
         <input type="text" id="addInput${idx}" placeholder="Añadir término (en inglés)">
         <select id="addType${idx}">
@@ -949,9 +1001,13 @@ function renderPicoGrid(){
           <option value="tiab">Texto libre (tiab)</option>
         </select>
         <button class="btn btn-ghost btn-sm" id="addBtn${idx}">+ Añadir</button>
+        ${hasAI()? `<button class="btn btn-ghost btn-sm" id="tradBtn${idx}" title="Traduce el texto del campo al inglés con IA (el resultado se verifica igualmente contra PubMed)">🌐 Traducir con IA</button>` : ''}
       </div>
       <div class="add-status" id="addStatus${idx}"></div>
-      <a class="chip linklike" style="margin-top:8px;" href="https://www.ncbi.nlm.nih.gov/mesh" target="_blank" rel="noopener">Ver MeSH Database ↗</a>
+      <div class="row" style="margin-top:8px;">
+        <a class="chip linklike" href="https://www.ncbi.nlm.nih.gov/mesh" target="_blank" rel="noopener">Ver MeSH Database ↗</a>
+        <a class="chip linklike" href="https://decs.bvsalud.org/es/" target="_blank" rel="noopener">Buscar en DeCS (español→inglés) ↗</a>
+      </div>
     `;
     grid.appendChild(card);
   });
@@ -971,32 +1027,64 @@ function renderPicoGrid(){
         state.elements[idx].terms.push({t:val, tipo:'tiab', verified:false});
         input.value=''; state.dirty = true; renderChips(idx); return;
       }
-      statusEl.textContent = 'Verificando contra PubMed…';
+      statusEl.textContent = 'Verificando contra la base de datos MeSH…';
       try{
         const {ok, headings} = await verifyMeshTerm(val);
-        if(ok){
-          headings.forEach(h=>{
-            if(!state.elements[idx].terms.some(t=>t.tipo==='mesh' && t.t===h)){
-              state.elements[idx].terms.push({t:h, tipo:'mesh', verified:true});
-            }
-          });
-          statusEl.className='add-status ok'; statusEl.textContent = '✓ Añadido: '+headings.join(', ');
-          input.value=''; state.dirty = true; renderChips(idx);
-        } else {
+        if(!ok){
           statusEl.className='add-status err';
-          statusEl.textContent = '✗ PubMed no reconoce "'+val+'" como encabezamiento MeSH. Prueba otro término, o añádelo como texto libre.';
+          statusEl.textContent = '✗ PubMed no reconoce "'+val+'" como encabezamiento MeSH. Prueba otro término, consulta DeCS/MeSH Database, o añádelo como texto libre.';
+          return;
         }
+        let addedExact = 0, sentToReview = 0;
+        for(const h of headings){
+          if(h.exact){
+            if(!state.elements[idx].terms.some(t=>t.tipo==='mesh' && t.t===h.heading)){
+              state.elements[idx].terms.push({t:h.heading, tipo:'mesh', verified:true, exact:true});
+              addedExact++;
+            }
+          } else if(!state.elements[idx].pending.some(p=>p.heading===h.heading)){
+            state.elements[idx].pending.push({heading:h.heading, from:val, scopeNote:'(cargando definición…)'});
+            sentToReview++;
+            getMeshScopeNote(h.heading).then(note=>{
+              const p = state.elements[idx].pending.find(x=>x.heading===h.heading);
+              if(p){ p.scopeNote = note || '(la base de datos MeSH no devolvió una definición para este encabezamiento)'; renderChips(idx); }
+            });
+          }
+        }
+        state.dirty = true; renderChips(idx);
+        if(sentToReview>0){
+          statusEl.className='add-status ok';
+          statusEl.textContent = '⚠ PubMed interpretó tu término de forma distinta a como lo escribiste — revisa la definición antes de aceptarlo (abajo, en "candidatos por revisar").';
+        } else if(addedExact>0){
+          statusEl.className='add-status ok'; statusEl.textContent = '✓ Añadido como encabezamiento MeSH exacto.';
+        }
+        input.value='';
       }catch(e){
         statusEl.className='add-status err'; statusEl.textContent = 'Error al consultar PubMed: '+e.message;
       }
     };
     document.getElementById('addBtn'+idx).addEventListener('click', doAdd);
     document.getElementById('addInput'+idx).addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doAdd(); } });
+    const tradBtn = document.getElementById('tradBtn'+idx);
+    if(tradBtn){
+      tradBtn.addEventListener('click', async ()=>{
+        const input = document.getElementById('addInput'+idx);
+        const statusEl = document.getElementById('addStatus'+idx);
+        const val = input.value.trim();
+        if(!val) return;
+        statusEl.className='add-status'; statusEl.textContent = 'Traduciendo con IA…';
+        try{
+          const en = await translateToEnglish(val);
+          if(en){ input.value = en; document.getElementById('addType'+idx).value = 'mesh'; statusEl.textContent = 'Traducido a "'+en+'". Revisa y pulsa Añadir para verificarlo contra PubMed.'; }
+        }catch(e){ statusEl.className='add-status err'; statusEl.textContent = errHtml(e).replace(/<[^>]+>/g,''); }
+      });
+    }
   });
 }
 
 function renderChips(idx){
   const box = document.getElementById('chips'+idx);
+  const pendBox = document.getElementById('pending'+idx);
   if(!box) return;
   const el = state.elements[idx];
   box.innerHTML = el.terms.map((term, i)=>`
@@ -1008,6 +1096,30 @@ function renderChips(idx){
     const i = e.target.dataset.idx, j = e.target.dataset.i;
     state.elements[i].terms.splice(j,1); state.dirty = true; renderChips(i);
   }));
+  if(pendBox){
+    pendBox.innerHTML = (el.pending||[]).map((p,i)=>`
+      <div class="source-card" style="border-left:3px solid var(--gold); padding:10px 12px; margin-bottom:8px;">
+        <div style="font-size:12.5px;"><strong>«${escapeHtml(p.from)}»</strong> → PubMed lo interpreta como <strong>${escapeHtml(p.heading)}</strong></div>
+        <div class="note" style="font-style:normal;">${escapeHtml(p.scopeNote)}</div>
+        <div class="row" style="margin-top:6px;">
+          <button class="btn btn-primary btn-sm" data-idx="${idx}" data-i="${i}" data-act="accept">Sí, es lo que quiero — añadir</button>
+          <button class="btn btn-ghost btn-sm" data-idx="${idx}" data-i="${i}" data-act="reject">No, descartar</button>
+        </div>
+      </div>
+    `).join('');
+    pendBox.querySelectorAll('[data-act=accept]').forEach(b=>b.addEventListener('click', e=>{
+      const i=e.target.dataset.idx, j=e.target.dataset.i;
+      const p = state.elements[i].pending[j];
+      if(p && !state.elements[i].terms.some(t=>t.tipo==='mesh' && t.t===p.heading)){
+        state.elements[i].terms.push({t:p.heading, tipo:'mesh', verified:true, exact:false});
+      }
+      state.elements[i].pending.splice(j,1); state.dirty = true; renderChips(i);
+    }));
+    pendBox.querySelectorAll('[data-act=reject]').forEach(b=>b.addEventListener('click', e=>{
+      const i=e.target.dataset.idx, j=e.target.dataset.i;
+      state.elements[i].pending.splice(j,1); renderChips(i);
+    }));
+  }
 }
 
 document.getElementById('btnContinueStep2').addEventListener('click', ()=>{
@@ -1016,6 +1128,11 @@ document.getElementById('btnContinueStep2').addEventListener('click', ()=>{
   const empty = state.elements.filter(el=>el.terms.length===0);
   if(empty.length){
     errBox.innerHTML = '<div class="err">Añade al menos un término a cada elemento antes de continuar ('+empty.map(e=>e.key).join(', ')+').</div>';
+    return;
+  }
+  const pending = state.elements.filter(el=>(el.pending||[]).length>0);
+  if(pending.length){
+    errBox.innerHTML = '<div class="err">Tienes candidatos MeSH pendientes de revisar en: '+pending.map(e=>e.key).join(', ')+'. Acepta o descarta cada uno (lee su definición) antes de continuar.</div>';
     return;
   }
   renderFilters();
@@ -1070,7 +1187,23 @@ Responde EXCLUSIVAMENTE en JSON: {"equation":"...", "explanation":"explicación 
   const userPayload = { ecuacion_actual: state.equation, instruccion_del_estudiante: instruction };
   const out = await callOpenAI([{role:'system', content: sys}, {role:'user', content: JSON.stringify(userPayload)}]);
   state.equation = out.equation; state.equationExplain = out.explanation;
+  if(hasTopLevelOr(state.equation)){
+    state.equationExplain += ' ⚠ Aviso automático: esta ecuación quedó con un OR fuera de cualquier paréntesis. Eso normalmente es un error entre conceptos PICO (debería ser AND) — revísala con cuidado antes de buscar, o edítala a mano.';
+  }
   renderEquation();
+}
+// Comprueba si hay un " OR " a profundidad 0 (fuera de todo paréntesis). En una ecuación bien
+// formada (nuestro constructor determinista, o un refinado correcto) esto nunca debería ocurrir:
+// los OR siempre van dentro de un bloque de concepto o de un bloque de filtros.
+function hasTopLevelOr(eq){
+  let depth = 0;
+  for(let i=0;i<eq.length;i++){
+    const ch = eq[i];
+    if(ch==='(') depth++;
+    else if(ch===')') depth--;
+    else if(depth===0 && eq.substr(i,4)===' OR ') return true;
+  }
+  return false;
 }
 
 function buildEquationDeterministic(){
@@ -1536,7 +1669,7 @@ async function renderHistory(){
 function loadSession(it){
   state.question = it.question || ''; state.framework = it.framework; state.questionType = it.questionType || '';
   state.rationale = it.rationale || '';
-  state.elements = (it.elements || []).map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms: e.terms||[]}));
+  state.elements = (it.elements || []).map(e=>({key:e.key, label:e.label, texto:e.texto||'', terms: e.terms||[], pending: e.pending||[]}));
   state.equation = it.equation || ''; state.equationExplain = it.equationExplain || '';
   state.activeFilterLabels = it.activeFilterLabels || [];
   state.years = (it.years!==undefined)? it.years : 10; state.lang = it.lang || ''; state.retmax = it.retmax || 50;
