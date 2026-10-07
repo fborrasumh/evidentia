@@ -1,51 +1,60 @@
 # EvidentIA
 
+De la pregunta clínica a una búsqueda bibliográfica reproducible en PubMed y en otras fuentes. Aplicación web de un solo fichero, pensada para la asignatura «Documentación Científica Avanzada y Elaboración Práctica de un Proyecto de Investigación» (Universidad Miguel Hernández de Elche).
+
+**Usar la app:** https://fborrasumh.github.io/evidentia/
+
+**Idiomas:** español (por defecto), inglés y portugués; selector en la barra superior (o `?lang=en` / `?lang=pt` en la URL).
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21519654.svg)](https://doi.org/10.5281/zenodo.21519654)
 
-**Aplicación:** https://fborrasumh.github.io/evidentia/
+## Qué hace
 
-De la **pregunta clínica** a una **búsqueda bibliográfica reproducible** en PubMed. El estudiante formula la pregunta, la estructura en PICO, PICOS, PECO o SPIDER y elige los términos. Cada descriptor MeSH se verifica en vivo contra PubMed antes de entrar en la ecuación. Después filtra, ve cuánto aporta cada elemento, compara en otras fuentes, criba los resultados y exporta un anexo metodológico alineado con la rúbrica de la asignatura *Documentación Científica Avanzada y Elaboración Práctica de un Proyecto de Investigación*. Aplicación de un solo fichero (`index.html`), sin servidor.
+1. **Pregunta y marco.** Comprueba que la pregunta está en forma interrogativa y la estructura en PICO, PICOS, PECO o SPIDER, a mano o con propuesta de la IA.
+2. **Términos verificados.** Cada candidato a MeSH se comprueba en vivo contra PubMed (E-utilities): los exactos entran directamente; los que PubMed interpreta como otro descriptor se muestran con su definición oficial y la persona decide. Cada término y bloque muestra su recuento de artículos.
+3. **Filtros y límites.** Diseños de estudio y edades (OR dentro de cada grupo); humanos y las tres opciones de disponibilidad del texto de PubMed —Resumen (`hasabstract`), Texto completo gratuito (`"free full text"[sb]`) y Texto completo (`"full text"[sb]`)—, cada una con AND; fecha e idioma. Todo forma parte de la ecuación.
+4. **Ecuación y embudo.** La ecuación que se ejecuta es la que se entrega. Embudo con recuentos reales al añadir cada bloque. Refinado opcional con IA, que el código rechaza si añade `[All Fields]`, une conceptos con OR fuera de paréntesis o rompe la sintaxis, y avisa si desaparecen términos.
+5. **Otras fuentes.** La ecuación se reescribe para la búsqueda avanzada de:
+   - **Cochrane Library** (Search manager): `[mh "…"]`, `[mh ^"…"]` sin explosión, `:ti,ab,kw`, y frases truncadas con `NEXT` (Cochrane ignora el asterisco dentro de comillas).
+   - **Scopus** (Advanced document search): `TITLE-ABS-KEY(…)`, `PUBYEAR >`, `LANGUAGE(…)`.
+   - **Web of Science Core Collection** (Advanced search): `TS=(…)`, `PY=(…)`, `LA=(…)`.
+   - **Europe PMC**: `MESH:`, `TITLE`/`ABSTRACT`, `PUB_YEAR`, `LANG`, `HAS_ABSTRACT`, `HAS_FREE_FULLTEXT`, con recuento en vivo.
+   - Una versión genérica para cualquier otra base.
 
-## Novedades de la versión 6.0
+   El código comprueba en cada una paréntesis, comillas, operadores y que no queden etiquetas de PubMed, y lista los límites que no tienen equivalente en esa base (con cómo aplicarlos).
+6. **Carga e integración de resultados.** Cada fuente tiene su botón para cargar los resultados exportados (CSV; también el TXT delimitado por tabuladores de Web of Science, Excel y RIS). Europe PMC permite traerlos directamente por su API (hasta 2.000). En el paso 6 todos los registros se integran en una sola lista, se eliminan duplicados por DOI, PMID o título con el mismo año, y cada registro indica en qué fuentes apareció. Recuento tipo PRISMA (identificados, duplicados eliminados, únicos cribados, incluidos, excluidos) y tabla por fuente.
+7. **Cribado.** Incluir, excluir o dudoso, decidido por la persona. La IA (opcional) sugiere por título y resumen; el código descarta respuestas con identificadores inexistentes o valores no válidos.
+8. **Anexo metodológico.** Word y PDF con la pregunta, el marco, los términos, las ecuaciones de cada fuente, la fecha, los límites, la integración, los artículos, la respuesta y la autoevaluación de la rúbrica (apartados A a D). Párrafo de métodos generado; el pulido con IA se rechaza si cambia la ecuación o introduce cifras nuevas. Exportación RIS y CSV de todas las fuentes y sesión en JSON.
 
-**Correcciones que afectan a los resultados**
+Las sesiones y el historial de las versiones 5 y 6 se abren en esta versión (las decisiones de cribado se conservan).
 
-- **Filtros bien combinados.** En la v5 todos se unían con OR: marcar «Ensayo clínico aleatorizado» y «Solo humanos» producía `(RCT[pt] OR Humans[Mesh])`. Ahora los diseños de estudio se combinan con OR entre sí, igual que las edades, y el resto de límites con AND.
-- **La ecuación entregada es la ejecutada.** La fecha y el idioma forman parte de la ecuación, del embudo y del anexo, que además registra la fecha de la búsqueda.
-- **Compatibilidad.** Las sesiones de la v5 se abren y su ecuación se reconstruye, con aviso para repetir la búsqueda. El historial se conserva y ahora se ordena por fecha.
+## Cómo se usa la IA
 
-**Mejoras**
-
-- Recorrido guiado con el estilo de Forja, con comprobación en vivo de la forma interrogativa que exige la rúbrica.
-- **Recuento en PubMed de cada término y de cada bloque**; un cero se marca como posible errata.
-- **Opciones MeSH** [Majr] y sin explosión, y truncamiento en texto libre.
-- **17 filtros** en tres grupos: diseño (incluye cualitativa y precisión diagnóstica), edad y otros límites.
-- **Embudo** con el nombre de cada elemento y aviso de bloques demasiado restrictivos. La edición manual se valida: paréntesis, OR sueltos, [All Fields] y operadores en minúscula.
-- **Otras fuentes**: la ecuación traducida a Scopus, Web of Science y Cochrane, y el recuento real en Europe PMC.
-- **Cribado del estudiante**, con sugerencias opcionales de la IA; recuento tipo PRISMA; orden por relevancia o fecha; «cargar más»; exportación **RIS** y CSV.
-- **Anexo**: rúbrica siempre visible, párrafo de métodos con fecha y cribado, y protección para que la IA no altere la ecuación al mejorar la redacción. Exportación a Word, PDF y JSON.
-- **Cuatro ejemplos resueltos**, uno por marco (PICO, PICOS, PECO y SPIDER), verificados en vivo contra PubMed.
-
-## Verificación MeSH
-
-Ningún descriptor entra por la palabra de la IA. Cada candidato se comprueba contra el campo `[MeSH Terms]` de PubMed:
-
-- **coincidencia exacta**: se añade;
-- **interpretado como otro descriptor** (p. ej., *effectiveness* → *Treatment Outcome*): se muestra su definición oficial de la NLM y el estudiante decide;
-- **inexistente**: pasa a texto libre con una nota.
+Es opcional: sin clave se trabaja en modo manual y los ejemplos funcionan sin ella. Con la propia clave de OpenAI, Google Gemini o Anthropic Claude, guardada solo en el navegador. No hace falta servidor.
 
 ## Privacidad
 
-Todo se guarda en el navegador (IndexedDB y `localStorage`). La clave de OpenAI es opcional (modo manual sin IA) y es la compartida del catálogo (`ia_openai_key`). Las consultas van a PubMed (NCBI) y Europe PMC.
+La búsqueda, el historial, las claves y los archivos que se cargan se guardan y procesan solo en el navegador. A PubMed (NCBI) y Europe PMC salen los términos y las ecuaciones. Al proveedor de IA, solo si se usa, salen la pregunta, los términos y, para sugerir el cribado, títulos y resúmenes publicados; antes del primer envío se muestra una muestra de lo que sale. Los archivos cargados no salen del navegador.
+
+## Límites
+
+- Las ecuaciones de Cochrane, Scopus y Web of Science se generan y se comprueban por sintaxis, pero la app no puede ejecutarlas en bases de suscripción: hay que revisar el número de resultados en cada una.
+- Los filtros de diseño, edad, humanos y disponibilidad del texto son propios de PubMed y no siempre tienen equivalente: la app lo indica y hay que aplicarlos con los filtros de cada base o en el cribado.
+- Las ecuaciones de las otras fuentes se construyen desde los términos, filtros y límites, no desde una edición manual de la ecuación de PubMed.
+- La deduplicación no detecta dos versiones de un mismo trabajo con títulos distintos y sin DOI ni PMID comunes; compara solo los registros de PubMed que se hayan traído.
+- La lectura de CSV reconoce las cabeceras habituales de Scopus, Web of Science, Cochrane, PubMed y Europe PMC; si una exportación usa otras, la app indica qué columnas encontró.
+- La IA puede equivocarse: propone, el código comprueba lo que puede comprobar y la decisión es de la persona.
+
+## Autoría
+
+Fernando Borrás Rocher (Universidad Miguel Hernández de Elche) y Enrique Perdiguero Gil (Universidad Miguel Hernández de Elche).
+
+ORCID: Fernando Borrás Rocher [0000-0002-5519-4573](https://orcid.org/0000-0002-5519-4573) · Enrique Perdiguero Gil [0000-0003-0870-3512](https://orcid.org/0000-0003-0870-3512)
 
 ## Cómo citar
 
-Borrás Rocher, F. (2026). *EvidentIA* (versión 6.0.0) [Software]. Universidad Miguel Hernández de Elche. https://doi.org/10.5281/zenodo.21519654
-
-El DOI es el de concepto: apunta siempre a la última versión. GitHub ofrece la cita en APA y BibTeX con el botón *Cite this repository*, a partir de `CITATION.cff`.
-
-Forma parte del catálogo [Herramientas IA para la academia](https://fborrasumh.github.io/ia/).
+Borrás Rocher, F. y Perdiguero Gil, E. (2026). *EvidentIA* (v7.0.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.21519654
 
 ## Licencia
 
-MIT © 2026 Fernando Borrás Rocher · Universidad Miguel Hernández de Elche.
+MIT. Véase [LICENSE](LICENSE).
