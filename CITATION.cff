@@ -1,23 +1,19 @@
 cff-version: 1.2.0
 message: "Si usas este software, cítalo con estos metadatos."
 title: "EvidentIA"
-abstract: "De la pregunta clínica a una búsqueda bibliográfica reproducible: marco PICO, PICOS, PECO o SPIDER, términos MeSH verificados en vivo contra PubMed con su recuento, filtros bien combinados, ecuación completa con límites, embudo de evidencia, traducción a Scopus, Web of Science y Cochrane, cribado, exportación RIS y anexo metodológico alineado con la rúbrica."
 type: software
 authors:
   - family-names: "Borrás Rocher"
     given-names: "Fernando"
     affiliation: "Universidad Miguel Hernández de Elche"
     orcid: "https://orcid.org/0000-0002-5519-4573"
+  - family-names: "Perdiguero Gil"
+    given-names: "Enrique"
+    affiliation: "Universidad Miguel Hernández de Elche"
+    orcid: "https://orcid.org/0000-0003-0870-3512"
 doi: "10.5281/zenodo.21519654"
-version: "6.0.0"
-date-released: "2026-09-30"
+version: "7.0.0"
+date-released: "2026-10-07"
 url: "https://fborrasumh.github.io/evidentia/"
 repository-code: "https://github.com/fborrasumh/evidentia"
 license: MIT
-keywords:
-  - "búsqueda bibliográfica"
-  - "PubMed"
-  - "MeSH"
-  - "medicina basada en la evidencia"
-  - "PICO"
-  - "docencia universitaria"
